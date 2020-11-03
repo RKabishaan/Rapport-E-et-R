@@ -13,7 +13,7 @@ Dans un premier temps la trame binaire est fournie pour se focaliser uniquement 
 
 Puis dans un second temps, le nom de la radio sera reçue par liaison série et la trame sera alors à coder selon la norme. Pour cela, un microprocesseur NIOS sera implanté dans le FPGA et le programme qui sera réalisé donnera la possibilité de recevoir le nom par liaison série, de former les quatres groupes nécessaires de la trame, et d'écrire les bits correspondants dans la mémoire RAM bi port. La première partie qui récupère le contenu de la RAM enverra donc à l'émetteur le nouveau nom. 
 
-![40%center](figures/structure_codeurRDS.png)
+![40%center](figures/structure_CodeurRDS.png)
 <div align="center"> Structure du codeur de trame RDS </div>
 
 <br>
