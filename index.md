@@ -5,11 +5,17 @@ layout: default
 # Etude et Réalisation: Codeur de trame RDS
 ## RAPPORT DE PROJET
 
+**Introduction**:
+
 Le but de cette étude est de coder et de transmettre un texte à un récepteur FM RDS en utilisant le service de présentation du nom de la station (Program Service Name).
+<br>
+
+Pour plus de détails, 
+voici un [document expliquant le fonctionnement du système RDS, ainsi que les consignes du travail à réaliser (cliquer).](files/Sujet_ER_CodeurRDS_DE10Lite.pdf)
 
 Cette étude sera divisé en deux parties:
 
-Dans un premier temps la trame binaire est fournie pour se focaliser uniquement sur le cadencement de la transmission. Cette partie consiste à énérer les signaux d'horloge nécessaires pour la lecture et le codeage de la trame binaire, à lire cette dernière bit pas bit en boucle d'une mémoire de type RAM bi port et à coder en biphase. Un montage analogique sera branché en sortie et permettra à un récepteur du commerce d'afficher le nom de la station émise(GE1 FM).
+Dans un premier temps la trame binaire est fournie pour se focaliser uniquement sur le cadencement de la transmission. Cette partie consiste à générer les signaux d'horloge nécessaires pour la lecture et le codage de la trame binaire, à lire cette dernière bit pas bit en boucle d'une mémoire de type RAM bi port et à coder en biphase. Un montage analogique sera branché en sortie et permettra à un récepteur du commerce d'afficher le nom de la station émise "GE1 FM".
 
 Puis dans un second temps, le nom de la radio sera reçue par liaison série et la trame sera alors à coder selon la norme. Pour cela, un microprocesseur NIOS sera implanté dans le FPGA et le programme qui sera réalisé donnera la possibilité de recevoir le nom par liaison série, de former les quatres groupes nécessaires de la trame, et d'écrire les bits correspondants dans la mémoire RAM bi port. La première partie qui récupère le contenu de la RAM enverra donc à l'émetteur le nouveau nom. 
 
