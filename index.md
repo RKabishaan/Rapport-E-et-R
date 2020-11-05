@@ -2,7 +2,6 @@
 layout: default
 ---
 
-# Etude et Réalisation: Codeur de trame RDS
 ## RAPPORT DE PROJET
 
 **Introduction**:
