@@ -230,7 +230,7 @@ Ce _test bench_ nous permet d'obtenir les résultats de simulation suivants:
 
 <br>
 
-![40%center](figures/chronogramme_gen_horloges_1.Png) 
+![40%center](figures/chronogramme_gen_horloges_1.png) 
 <div align="center"> Chronogramme 1: Générateur de signaux d'horloges </div>
 
 <br>
@@ -239,7 +239,7 @@ Tout d'abord, on remarque que le signal **w_57k** est bien à 57kHz (la demi-per
 
 <br>
 
-![40%center](figures/chronogramme_gen_horloges_2.Png)
+![40%center](figures/chronogramme_gen_horloges_2.png)
 <div align="center"> Chronogramme 2: Générateur de signaux d'horloges </div>
 
 > Calculs:
@@ -254,7 +254,7 @@ Les signaux **w_57k_48** et **w_rd_mem** ont une fréquence de 57/48 kHz, et **w
 
 <br>
 
-![40%center](figures/chronogramme_gen_horloges_3.Png)
+![40%center](figures/chronogramme_gen_horloges_3.png)
 <div align="center"> Chronogramme 3: Générateur de signaux d'horloges </div>
 
 <br>
