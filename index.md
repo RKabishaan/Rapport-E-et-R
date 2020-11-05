@@ -2,7 +2,7 @@
 layout: default
 ---
 
-## RAPPORT DE PROJET
+# RAPPORT DE PROJET
 
 **Introduction**:
 
@@ -22,10 +22,10 @@ Puis dans un second temps, le nom de la radio sera reçue par liaison série et 
 
 <br>
 
-## Partie 1: Transmission de la trame binaire stocké en RAM
+# Partie 1: Transmission de la trame binaire stocké en RAM
 <br>
 
-### 1. Générateur d'horloge 114 kHz
+## 1. Générateur d'horloge 114 kHz
 
 L'hologe de 114 kHz ne peut pas s'obtenir par une simple division de fréquence à partir de l'oscillateur de 50MHz de la carte DE10-Lite, car le facteur de division ne serait alors pas entier ( 50M/114k = 438,596491... ). Le design va donc utiliser un bloc interne du FPGA appelé DDL qui a la particularité de pouvroir multiplier et diviser la fréquence. Le bloc générateur de 114 kHz à étudier utilise ce bloc **atpll** qui fournira la fréquence de 114 kHz. 
 
@@ -60,7 +60,7 @@ L'oscilloscope mesure bien un signal carré à 114 kHz (à 10 Hz près) en sorti
 
 <br>
 
-### 2. Générateur de signaux d'horloge
+## 2. Générateur de signaux d'horloge
 
 Le bloc générateur de signaux d'horloge va permettre de délivrer à partir du signal d'entré de 114 kHz (**w_114k**):
 * un signal carré de 57 kHz (**w_57k**).
@@ -308,7 +308,7 @@ Notre générateur de signaux d'horloge fonctionne donc comme voulus.
 
 <br>
 
-### 3. Compteur d'adresse de la RAM
+## 3. Compteur d'adresse de la RAM
 
 Ce compteur d'adresse est un compteur qui permet à la RAM bi-port (bloc suivant) de savoir à quelle adresse lire la donnée à distribuer (bit de la trame). C'est un compteur full-synchrone qui incrémente l'adresse générée **adr_read**, à chaque impulsion de **w_rd_mem** (l'entrés s'appelle **en** pour ce bloc). Etant donné que notre trame à envoyer est composée de 416 bits, notre compteur d'adresse doit compter de 0 à 415, car charque bit est rangé à une adresse mémoire. Ainsi, nous obtenons le programme suivant.
 
@@ -447,7 +447,7 @@ Tout fonctionne correctement, nous pouvont donc générer le symbole corresponda
 
 <br>
 
-### 4. Mémoire bi-port
+## 4. Mémoire bi-port
 
 C'est un bloc qui est chargé de transmettre en sortie la donnée **data_read** correspondant l'adresse fournis en entrée **adr_read**.
 Dans cette partie, nous nous intéressons qu'à la transmission de la trame stocké en RAM. Pour ce faire, la trame initiale seras pré-enregistré dans notre RAM, à travers le fichier **Codeur_RDS.mif** qui nous est fournis. Ainsi, nous nous occuperons uniquement de l'entrée d'adresse **adr_read**, l'horloge d'entrée **clk_50M**, et la sortie de donnée **data_read**. Le bloc est constitué de deux sous-blocs, la **ram 2 ports**, et un **diviseur de fréquence par 50**.
