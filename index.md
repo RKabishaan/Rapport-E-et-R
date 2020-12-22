@@ -8,8 +8,6 @@ layout: default
 
 Le but de cette étude est de coder et de transmettre un texte à un récepteur FM RDS en utilisant le service de présentation du nom de la station (Program Service Name).
 <br>
-Pour plus de détails, 
-voici un [document expliquant le fonctionnement du système RDS, ainsi que les consignes du travail à réaliser (cliquer).](files/Sujet_ER_CodeurRDS_DE10Lite.pdf)
 
 Cette étude sera divisé en deux parties:
 
@@ -39,21 +37,117 @@ Notre générateur d'horloge 114 kHz a:
 
 <br>
 
->Remaque: La porte inverseuse (NOT) permet d'avoir le fonctionnement voulus en prennant en compte le fait que les boutons poussoirs sur la carte DE10-Lite fournissent un niveau logique haut au repos.
+>Remaque: La porte inverseuse (NOT) permet d'avoir le fonctionnement voulu en prennant en compte le fait que les boutons poussoirs sur la carte DE10-Lite fournissent un niveau logique haut au repos.
 
-Quartus nous permet de générer automatiquement le fichier vhdl correspondant au composant dont le schéma à été saisie, ainsi que son test bench (à compléter) nous permettant d'effectuer une simulation du composant. 
+Quartus nous permet de générer automatiquement le fichier vhdl correspondant au composant dont le schéma à été saisie, ainsi que son _test bench_ (à compléter) nous permettant d'effectuer une simulation du composant. 
 
-# AJOUTER SIMULATION MODELSIM
-> je vais ajouter la partie simulation sur modelsim plus tard à l'IUT car ça ne fonctionne pas comme voulus chez moi.
+Voici le _test bench_ (banc de test) complété afin de simuler notre générateur d'horloge 114 kHz.
 
-Une fois la partie théorique validé, nous nous assurons du fonctionnement pratique du composant, en programmant la carte et en effectuant les mesures nécessaires à l'oscilloscope.
+```vhdl
+-- Copyright (C) 2017  Intel Corporation. All rights reserved.
+-- Your use of Intel Corporation's design tools, logic functions 
+-- and other software and tools, and its AMPP partner logic 
+-- functions, and any output files from any of the foregoing 
+-- (including device programming or simulation files), and any 
+-- associated documentation or information are expressly subject 
+-- to the terms and conditions of the Intel Program License 
+-- Subscription Agreement, the Intel Quartus Prime License Agreement,
+-- the Intel FPGA IP License Agreement, or other applicable license
+-- agreement, including, without limitation, that your use is for
+-- the sole purpose of programming logic devices manufactured by
+-- Intel and sold by Intel or its authorized distributors.  Please
+-- refer to the applicable agreement for further details.
+
+-- ***************************************************************************
+-- This file contains a Vhdl test bench template that is freely editable to   
+-- suit user's needs .Comments are provided in each section to help the user  
+-- fill out necessary details.                                                
+-- ***************************************************************************
+-- Generated on "10/24/2020 18:41:55"
+                                                            
+-- Vhdl Test Bench template for design  :  gen_114k
+-- 
+-- Simulation tool : ModelSim-Altera (VHDL)
+-- 
+
+-- TEST BENCH: GENERATEUR D'HORLOGE 114K
+
+-- Bibliothèques
+LIBRARY ieee;                                               
+USE ieee.std_logic_1164.all;                                
+
+
+ENTITY gen_114k_vhd_tst IS
+END gen_114k_vhd_tst;
+
+
+ARCHITECTURE gen_114k_arch OF gen_114k_vhd_tst IS
+-- constants                                                 
+-- signals                                                   
+SIGNAL clk : STD_LOGIC:='0';
+SIGNAL clk_114k : STD_LOGIC;
+SIGNAL n_reset : STD_LOGIC:='1';
+
+-- Composants
+COMPONENT gen_114k
+	PORT (
+	clk : IN STD_LOGIC;
+	clk_114k : OUT STD_LOGIC;
+	n_reset : IN STD_LOGIC
+	);
+END COMPONENT;
+
+BEGIN
+	-- Instanciation
+	i1 : gen_114k
+	PORT MAP (
+	-- list connections between master ports and signals
+	clk => clk,
+	clk_114k => clk_114k,
+	n_reset => n_reset
+	);
+
+	-- Simulation d'une horloge de 50MHz
+	PROCESS
+	BEGIN
+	wait for 10 ns;
+	clk <= not clk;  
+	END PROCESS;
+
+	-- Simulation d'un comportement du signal de remise a zero
+	PROCESS
+	BEGIN
+	wait for 50 us;
+	n_reset <= '0';
+	wait for 200 ns;
+	n_reset <= '1';
+	END PROCESS;
+
+	-- Fix la duree de la simulation a 1 ms
+	PROCESS
+	BEGIN
+	wait for 1 ms;
+	assert false report "FIN DE SIMULATION" severity failure;
+	END PROCESS;
+
+END gen_114k_arch;
+```
+ModelSim nous permet alors de simuler notre générateur d'horloge 114kHz à travers notre _test bench_, ce qui nous donne les résultats suivants:
+![40%center](figures/chronogramme_gen114k.png)
+<div align="center"> Chronogramme: générateur d'horloge  114kHz </div>
+
+<br>
+
+Sur le chronogramme ci-dessus, on observe effectivement que l'horloge d'entrée (**clk**) a une fréquence de 50MHz, et que l'horloge de sortie (**clk_114k**) a la fréquence souhaité de 114kHz. On voit également le fonctionnement de l'entrée de remise à zéro (**n_reset**) qui, lorsqu'elle est active (à 0), bloque l'état de la sortie, et une fois relâché (passe à 1), recommence le cycle de l'horloge de sortie (**clk_114k**), à savoir un etat logique haut puis une alternance d'etat toutes les demi-periodes.
+
+Une fois la partie théorique validé, nous nous assurons du fonctionnement pratique du composant, en programmant la carte et en effectuant les mesures nécessaires à l'oscilloscope à l'aide d'une sonde, et voici ce que nous obtenons:
 
 ![40%center](figures/114kHz_Oscilo.png)
 <div align="center"> Oscilloscope: Sortie du générateur d'horloge  114kHz </div>
 
 <br>
 
-L'oscilloscope mesure bien un signal carré à 114 kHz (à 10 Hz près) en sortie. De plus, lorsqu'on appuy sur le bouton poussoir de la carte, la sortie vaut 0V. Notre bloc générateur d'horloge 114 kHz fonctionne donc correctement. Nous pouvont en faire un symbole sur Quartus. 
+L'oscilloscope mesure bien un signal carré à 114 kHz (à 10 Hz près) en sortie. De plus, lorsqu'on appuie sur le bouton poussoir de la carte, la sortie est bloqué. Notre bloc générateur d'horloge 114 kHz fonctionne donc correctement. Nous pouvont en faire un symbole sur Quartus. 
 
 ![40%center](figures/symbole_gen114k.png)
 <div align="center"> Symbole du générateur d'horloge 114 kHz </div>
@@ -310,7 +404,7 @@ Notre générateur de signaux d'horloge fonctionne donc comme voulus.
 
 ## 3. Compteur d'adresse de la RAM
 
-Ce compteur d'adresse est un compteur qui permet à la RAM bi-port (bloc suivant) de savoir à quelle adresse lire la donnée à distribuer (bit de la trame). C'est un compteur full-synchrone qui incrémente l'adresse générée **adr_read**, à chaque impulsion de **w_rd_mem** (l'entrés s'appelle **en** pour ce bloc). Etant donné que notre trame à envoyer est composée de 416 bits, notre compteur d'adresse doit compter de 0 à 415, car charque bit est rangé à une adresse mémoire. Ainsi, nous obtenons le programme suivant.
+Ce compteur d'adresses est un compteur qui permet à la RAM bi-port (bloc suivant) de savoir à quelle adresse lire la donnée à distribuer (bit de la trame). C'est un compteur full-synchrone qui incrémente l'adresse générée **adr_read**, à chaque impulsion de **w_rd_mem** (l'entrée s'appelle **en** pour ce bloc). Etant donné que notre trame à envoyer est composée de 416 bits, notre compteur d'adresse doit compter de 0 à 415, car charque bit est rangé à une adresse mémoire. Ainsi, nous obtenons le programme suivant.
 
 ```vhdl
 -- COMPTEUR D'ADRESSE DE LA RAM
@@ -779,4 +873,443 @@ Nous avons fait en sorte que le compteur d'adresse (**adr_read**) ait le comport
 ![40% center](figures/symbole_ram_biport.png)
 <div align="center"> Symbole de la mémoire bi-port </div>
 
+<br>
 
+## 5. Codeur biphase
+
+Le bloc codeur biphase est formé par deux étages: un premier effectuant un codage différentiel de type NRZ et le deuxième réalisant le codage biphase.
+
+![40% center](figures/circuit_consigne_codeur_biphase.png)
+<div align="center"> Circuit souhaité du codeur biphase </div>
+
+<br>
+
+Le principe est illustré par le chronogramme suivant:
+
+![40% center](figures/chronogramme_theorique_codeur_biphase.png)
+<div align="center"> Chronogramme théorique du codeur biphase </div>
+
+<br>
+
+ L'information en sortie de la ram (bit ram) est traité par le codeur NRZ à 57 kHz/48 (bascule T). Sa sortie est ensuite traitée par le codeur biphase à une fréquence, double avec le principe suivant: si le bit vaut 0, il y a un enchainement 0-1  à cette fréquence double, si le bit vaut 1, il y a enchainement 1-0 à cette même fréquence double. Le seul problème est que en théorie, la sortie d'un tel codeur vaut soit -A, soit +A, pour que la valeure moyenne soit nulle. Ce n'est malheureusement pas possible avec un circuit logique dont la sortie évolue entre 0 et A. La solution est donc de fournir deux sorties complémentées (sortie biphase+ et sortie biphase-) qui seront ensuite traitées par un amplificateur opérationnel monté en soustracteur.
+
+
+ Dans un premier temps nous nous occupons du deuxième étage réalisant le codage biphase. Ce sous-bloc sera appelé **auto_biphase**. Voici les programmes de ce sous-bloc:
+
+ ```vhdl
+ -- SOUS-BLOC auto_biphase DU CODEUR BIPHASE
+
+-- Bibliothèques
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+
+entity auto_biphase is
+	port
+	(
+	 data: 	      in  std_logic; --donnee issue du codeur NRZ
+	 n_reset:     in  std_logic; --remize a zero  
+	 clk: 	      in  std_logic; --horloge d'entree
+	 code_plus:   out std_logic; --sortie biphase+
+	 code_moins:  out std_logic  --sortie biphase-
+	);
+end entity auto_biphase;
+
+
+architecture a_auto_biphase of auto_biphase is
+
+	-- Signaux internes
+	signal icode_plus: std_logic:='1';
+	signal icode_moins: std_logic:='0';
+	signal cpt: integer range 0 to 1:=0;
+
+begin
+
+	code_plus<=icode_plus;
+	code_moins<=icode_moins;
+
+	process
+	begin
+	wait until rising_edge(clk);
+
+	if n_reset = '0' then 
+	cpt<=0;
+
+	else
+		if cpt=1 then cpt<=0;
+		else cpt <= cpt+1;
+		end if;
+
+		if data='0' and cpt=0 then
+		icode_plus<='0';
+		icode_moins<='1';
+
+		elsif data='1' and cpt=0 then
+		icode_plus<='1';
+		icode_moins<='0';
+
+		elsif cpt=1 then
+		icode_plus<= not icode_plus;
+		icode_moins<= not icode_moins;
+		end if;
+	end if;
+
+	end process;
+
+
+end architecture a_auto_biphase;
+ ```
+ ```vhdl
+ -- TEST BENCH: SOUS-BLOC auto_biphase DU CODEUR BIPHASE
+
+-- Bibliothèques
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
+
+entity tb_auto_biphase is
+end entity tb_auto_biphase;
+
+architecture a_tb_auto_biphase of tb_auto_biphase is
+
+	-- Composants
+	component auto_biphase is
+	port
+	(
+	 data: in std_logic;
+	 n_reset: in std_logic;
+	 clk: in std_logic;
+	 code_plus: out std_logic;
+	 code_moins: out std_logic
+	);
+	end component;
+
+	-- Signaux internes
+	signal i_data: std_logic;
+	signal i_n_reset: std_logic:='1';
+	signal i_clk: std_logic:='0';
+	signal i_code_plus: std_logic;
+	signal i_code_moins: std_logic;
+
+begin
+	
+	--Instanciation
+	DUT: auto_biphase port map(data=>i_data, n_reset=>i_n_reset, clk=>i_clk, code_plus=>i_code_plus, code_moins=>i_code_moins);
+
+	--Simulation de l'horloge 57kHz/48 legerement decale 
+	process
+	begin
+	wait for 17.54386 us;
+	i_clk <= '1';
+	wait for 17.54386 us;
+	i_clk <= '0';
+	wait for 394.73614 us;
+	end process;
+
+	-- Simulation de l'entree de donnee
+	process
+	begin
+	i_data <= '1';
+	wait for 1.68421 ms;
+	i_data <= '0';
+	wait for 1.68421 ms;
+	end process;
+
+	-- Simulation de la remise a zero
+	process
+	begin
+	wait for 10 ms;
+	i_n_reset <= '0';
+	wait for 1 ms;
+	i_n_reset <= '1';
+	end process;
+
+	-- Fix la duree de la simulation a 50 ms
+	process
+	begin
+	wait for 50 ms;
+	assert false report "FIN DE SIMULATION" severity failure;
+	end process;
+
+
+end architecture a_tb_auto_biphase;
+ ```
+
+Et les résultats de simulation sont les suivants:
+![40%center](figures/chronogramme_auto_biphase.png)
+<div align="center"> Chronogramme: sous-bloc auto_biphase </div>
+
+<br>
+
+On observe que l'horloge d'entrée simulée a la même allure que le signal **w_57k_24** qui devrait être l'entrée futur de notre bloc, avec une fréquence de 57/24 kHz (2,375kHz). Lorsque l'entrée (**data**) vaut 1, on a une alternance 1-0 sur la sortie **code_plus** et l'inverse sur la sortie complémentaire **code_moins**. Lorsque l'entrée vaut 0, on a une alternance 0-1 sur la sortie **code_plus** et l'inverse sur **code_moins**. Le tout s'effectuant à la fréquence double de celle d'entrée.
+
+Notre sous-bloc **auto_biphase** est donc fonctionnel, nous en faisont un symbole.
+
+![40%center](figures/symbole_auto_biphase.png)
+<div align="center"> Symbole du sous-bloc auto_biphase </div>
+
+<br>
+
+Il ne reste plus qu'a réaliser le circuit complet en associant ce sous-bloc au premier étage effectuant le codage différentiel NRZ.
+
+![40%center](figures/circuit_codeur_biphase.png)
+<div align="center"> Schéma interne de synthèse du codeur biphase </div>
+
+<br>
+ 
+Afin de tester le fonctionnement de ce circuit, nous générons sur Quartus les programmes VHDL correspondants (circuit+_test bench_)
+
+```vhdl
+-- Copyright (C) 2017  Intel Corporation. All rights reserved.
+-- Your use of Intel Corporation's design tools, logic functions 
+-- and other software and tools, and its AMPP partner logic 
+-- functions, and any output files from any of the foregoing 
+-- (including device programming or simulation files), and any 
+-- associated documentation or information are expressly subject 
+-- to the terms and conditions of the Intel Program License 
+-- Subscription Agreement, the Intel Quartus Prime License Agreement,
+-- the Intel FPGA IP License Agreement, or other applicable license
+-- agreement, including, without limitation, that your use is for
+-- the sole purpose of programming logic devices manufactured by
+-- Intel and sold by Intel or its authorized distributors.  Please
+-- refer to the applicable agreement for further details.
+
+-- PROGRAM		"Quartus Prime"
+-- VERSION		"Version 17.1.0 Build 590 10/25/2017 SJ Lite Edition"
+-- CREATED		"Thu Nov 19 14:31:38 2020"
+
+-- CODEUR BIPHASE
+
+-- Bibliotheques
+LIBRARY ieee;
+USE ieee.std_logic_1164.all; 
+LIBRARY work;
+
+
+ENTITY codeur_biphase IS 
+	PORT
+	(
+		data_read :  IN   STD_LOGIC; -- donnee issue de la ram biport 
+		w_57k_48 :   IN   STD_LOGIC; -- horloge 57/48 kHz
+		w_57k_24 :   IN   STD_LOGIC; -- horloge 57/24 kHz
+		n_reset :    IN   STD_LOGIC; -- entree de remise a zero
+		code_plus :  OUT  STD_LOGIC; -- sortie biphase+
+		code_moins : OUT  STD_LOGIC  -- sortie biphase- (complementaire)
+	);
+END codeur_biphase;
+
+
+ARCHITECTURE bdf_type OF codeur_biphase IS 
+
+	-- Composants
+	COMPONENT auto_biphase
+	PORT(
+		 data : IN STD_LOGIC;
+		 n_reset : IN STD_LOGIC;
+		 clk : IN STD_LOGIC;
+		 code_plus : OUT STD_LOGIC;
+		 code_moins : OUT STD_LOGIC
+	     );
+	END COMPONENT;
+
+	-- Signaux internes
+	SIGNAL	w_xor :  STD_LOGIC:='0';
+	SIGNAL	SYNTHESIZED_WIRE_2 :  STD_LOGIC:='0';
+	SIGNAL	SYNTHESIZED_WIRE_0 :  STD_LOGIC;
+	SIGNAL	SYNTHESIZED_WIRE_1 :  STD_LOGIC;
+
+
+BEGIN 
+	SYNTHESIZED_WIRE_0 <= '1';
+	SYNTHESIZED_WIRE_1 <= '1';
+
+
+
+	b2v_inst : auto_biphase
+	PORT MAP(data => SYNTHESIZED_WIRE_2,
+		 n_reset => n_reset,
+		 clk => w_57k_24,
+		 code_plus => code_plus,
+		 code_moins => code_moins);
+
+
+
+
+	PROCESS(w_57k_48,SYNTHESIZED_WIRE_0,SYNTHESIZED_WIRE_1)
+	BEGIN
+	IF (SYNTHESIZED_WIRE_0 = '0') THEN
+	SYNTHESIZED_WIRE_2 <= '0';
+	ELSIF (SYNTHESIZED_WIRE_1 = '0') THEN
+	SYNTHESIZED_WIRE_2 <= '1';
+	ELSIF (RISING_EDGE(w_57k_48)) THEN
+	SYNTHESIZED_WIRE_2 <= w_xor;
+	END IF;
+	END PROCESS;
+
+
+	w_xor <= SYNTHESIZED_WIRE_2 XOR data_read;
+
+
+END bdf_type;
+```
+```vhdl
+-- Copyright (C) 2017  Intel Corporation. All rights reserved.
+-- Your use of Intel Corporation's design tools, logic functions 
+-- and other software and tools, and its AMPP partner logic 
+-- functions, and any output files from any of the foregoing 
+-- (including device programming or simulation files), and any 
+-- associated documentation or information are expressly subject 
+-- to the terms and conditions of the Intel Program License 
+-- Subscription Agreement, the Intel Quartus Prime License Agreement,
+-- the Intel FPGA IP License Agreement, or other applicable license
+-- agreement, including, without limitation, that your use is for
+-- the sole purpose of programming logic devices manufactured by
+-- Intel and sold by Intel or its authorized distributors.  Please
+-- refer to the applicable agreement for further details.
+
+-- ***************************************************************************
+-- This file contains a Vhdl test bench template that is freely editable to   
+-- suit user's needs .Comments are provided in each section to help the user  
+-- fill out necessary details.                                                
+-- ***************************************************************************
+-- Generated on "11/19/2020 12:23:47"
+                                                            
+-- Vhdl Test Bench template for design  :  codeur_biphase
+-- 
+-- Simulation tool : ModelSim-Altera (VHDL)
+-- 
+-- TEST BENCH: CODEUR BIPHASE
+
+--Bibliothèques
+LIBRARY ieee;                                               
+USE ieee.std_logic_1164.all;                                
+
+
+ENTITY codeur_biphase_vhd_tst IS
+END codeur_biphase_vhd_tst;
+
+
+ARCHITECTURE codeur_biphase_arch OF codeur_biphase_vhd_tst IS
+                                                 
+	-- Signaux internes                                                   
+	SIGNAL code_moins : STD_LOGIC;
+	SIGNAL code_plus : STD_LOGIC;
+	SIGNAL data_read : STD_LOGIC:='1';
+	SIGNAL n_reset : STD_LOGIC:='1';
+	SIGNAL w_57k_24 : STD_LOGIC:='0';
+	SIGNAL w_57k_48 : STD_LOGIC;
+
+	-- Composants
+	COMPONENT codeur_biphase
+	PORT (
+	code_moins : OUT STD_LOGIC;
+	code_plus : OUT STD_LOGIC;
+	data_read : IN STD_LOGIC;
+	n_reset : IN STD_LOGIC;
+	w_57k_24 : IN STD_LOGIC;
+	w_57k_48 : IN STD_LOGIC
+	);
+	END COMPONENT;
+
+BEGIN
+	-- Instanciation
+	i1 : codeur_biphase
+	PORT MAP (
+	-- list connections between master ports and signals
+	code_moins => code_moins,
+	code_plus => code_plus,
+	data_read => data_read,
+	n_reset => n_reset,
+	w_57k_24 => w_57k_24,
+	w_57k_48 => w_57k_48
+	);
+
+	-- Simulation de l'horloge 57/48 kHz
+	process
+	begin
+	w_57k_48 <= '1';
+	wait for 17.54386 us;
+	w_57k_48 <= '0';
+	wait for 824.5614 us;
+	end process;
+
+	-- Simulation de l'horloge 57/24 kHz
+	process
+	begin
+	wait for 17.54386 us;
+	w_57k_24 <= '1';
+	wait for 17.54386 us;
+	w_57k_24 <= '0';
+	wait for 385.9649 us;
+	end process;
+
+	-- Simulation de l'entree de donnee
+	process
+	begin
+	wait for 421.0526 us;
+	data_read <= '0';
+	wait for 842.10526 us;
+	data_read <= '1';
+	wait for 421.0526 us;
+	end process;
+
+	-- Simulation de l'entre de remize a zero
+	process
+	begin
+	wait for 20 ms;
+	n_reset <= '0';
+	wait for 500 us;
+	n_reset <= '1';
+	end process;
+
+	-- Fix la duree de la simulation a 40 ms
+	process
+	begin
+	wait for 40 ms;
+	assert false report "FIN DE SIMULATION" severity failure;
+	end process;
+
+                                       
+END codeur_biphase_arch;
+```
+
+La simulation nous donne les résultats suivants:
+![40%center](figures/chronogramme_codeur_biphase.png)
+<div align="center"> Chronogramme: codeur biphase </div>
+
+<br>
+
+Sur ce chronogramme nous vérifions tout d'abord que les entrées simulées (**data_read**, **w_57k_48**, **w57k_24**) ont les bonnes allures, ce qui est le cas ici. En effet, **w_57k_48** a une fréquence de 57/48 kHz (1,1875 kHz), **w57k_24** a une fréquence de 57/24 kHz (2,375 kHz), un bit de donnée **data_read** dure une période de l'horloge **w_57k_48**. De plus, le bit de donnée change entre deux impulsions d'horloge de **w_57k_48** comme le signal **rd_mem** (signal issu du générateur d'horloges réalisé précédemment) l'impose. Ensuite, nous observons que le signal **NRZ** (issu de l'étage de codage différentiel NRZ) a l'allure souhaitée (changement d'état lorsque l'entrée **data_read** vaut 1, et maintien de l'etat lorsque l'entrée **data_read** vaut 0). Et enfin, nous constatons que la sortie **code_plus** fait une transition 0-1 lorsque **NRZ** vaut 0, et 1-0 lorsque **NRZ** vaut 1, et que **code_moins** est complémentaire à **code_plus**, le tout s'effectuant à une fréquence double. 
+
+Notre codeur biphase semble donc fonctionner parfaitement bien, nous le vérifions à l'oscilloscope:
+
+![40%center](figures/codeur_biphase.png)
+<div align="center"> Oscilloscope: Codeur biphase </div>
+
+<br>
+
+Ces mesures nous confirment le bon fonctionnement de notre codeur biphase. En effet: **NRZ** change d'état lorsque **data_read** vaut 1, et maintient son état lorsque **data_read** vaut 0. **Code_plus** effectue une transition 0-1 lorsque **NRZ** vaut 0, et 1-0 lorsque **NRZ** vaut 1, et **code_moins** est complémentaire à **code_plus**, le tout s'effectuant à une fréquence double puisque le changement d'état s'effectue à 2,381 kHz (1.1905x2=2.381 kHz, 1,1905kHz étant la fréquence mesurée entre deux états).
+
+Notre codeur biphase fonctionne donc parfaitement bien, nous pouvons en faire un symbole.
+
+![40%center](figures/symbole_codeur_biphase.png)
+<div align="center"> Symbole du sous-bloc auto_biphase </div>
+
+<br>
+
+Nous avons désormais tous les blocs nécessaire pour la première partie. Il ne reste plus qu'à les assembler, puis à envoyer le programme sur la carte pour qu'on puisse enfin envoyer la trame RDS pré-enregistré. 
+
+![40%center](figures/circuit_partie1.png)
+<div align="center"> Circuit de la partie 1 du codeur RDS  </div>
+
+<br>
+
+Comme nous l'avions expliqué, la sortie de ce codeur doit être comprise entre -A et +A, c'est pourquoi nous connectons un circuit analogique à notre carte DE10-Lite. Ce complément vas nous permettre de retrouver le signal souhaité (compris entre -A et +A) grâce à un amplificateur opérationnel monté en soustracteur entre les sorties **code_plus** et **code_moins**. Ce signal est ensuite modulé en fréquence, puis envoyé par ondes électromagnétiques grâce à une antenne.
+
+![40%center](figures/montage_final_partie1.png)
+![40%center](figures/montage_final_partie1_GE1_FM.png)
+<div align="center"> Mise en pratique de la partie 1 du codeur RDS  </div>
+<br>
+
+Notre première partie du codeur RDS fonctionne parfaitement bien, nous recevons bien le nom de la station "GE1 FM" codé par la trame pré-enregistré.
