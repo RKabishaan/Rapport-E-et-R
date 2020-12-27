@@ -9,11 +9,11 @@ layout: default
 Le but de cette étude est de coder et de transmettre un texte à un récepteur FM RDS en utilisant le service de présentation du nom de la station (Program Service Name).
 <br>
 
-Cette étude sera divisé en deux parties:
+Cette étude sera divisée en deux parties:
 
 Dans un premier temps la trame binaire est fournie pour se focaliser uniquement sur le cadencement de la transmission. Cette partie consiste à générer les signaux d'horloge nécessaires pour la lecture et le codage de la trame binaire, à lire cette dernière bit pas bit en boucle d'une mémoire de type RAM bi port, et à coder en biphase. Un montage analogique sera branché en sortie et permettra à un récepteur du commerce d'afficher le nom de la station émise "GE1 FM".
 
-Puis dans un second temps, le nom de la radio sera reçue par liaison série et la trame sera alors à coder selon la norme. Pour cela, un microprocesseur NIOS sera implanté dans le FPGA et le programme qui sera réalisé donnera la possibilité de recevoir le nom par liaison série, de former les quatres groupes nécessaires de la trame, et d'écrire les bits correspondants dans la mémoire RAM bi port. La première partie qui récupère le contenu de la RAM enverra donc à l'émetteur, le nouveau nom. 
+Puis dans un second temps, le nom de la radio sera reçue par liaison série et la trame sera alors à coder selon la norme. Pour cela, un microprocesseur NIOS sera implanté dans le FPGA et le programme qui sera réalisé donnera la possibilité de recevoir le nom par liaison série, de former les quatre groupes nécessaires de la trame, et d'écrire les bits correspondants dans la mémoire RAM bi port. La première partie qui récupère le contenu de la RAM enverra donc à l'émetteur, le nouveau nom. 
 
 ![40%center](figures/structure_CodeurRDS.png)
 <div align="center"> Structure du codeur de trame RDS </div>
@@ -25,7 +25,7 @@ Puis dans un second temps, le nom de la radio sera reçue par liaison série et 
 
 ## 1. Générateur d'horloge 114 kHz
 
-L'hologe de 114 kHz ne peut pas s'obtenir par une simple division de fréquence à partir de l'oscillateur de 50MHz de la carte DE10-Lite, car le facteur de division ne serait alors pas entier ( 50M/114k = 438,596491... ). Le design va donc utiliser un bloc interne du FPGA appelé DDL qui a la particularité de pouvroir multiplier et diviser la fréquence. Le bloc générateur de 114 kHz à étudier utilise ce bloc **atpll** qui fournira la fréquence de 114 kHz. 
+L'horloge de 114 kHz ne peut pas s'obtenir par une simple division de fréquence à partir de l'oscillateur de 50MHz de la carte DE10-Lite, car le facteur de division ne serait alors pas entier ( 50M/114k = 438,596491... ). Le design va donc utiliser un bloc interne du FPGA appelé DDL qui a la particularité de pouvoir multiplier et diviser la fréquence. Le bloc générateur de 114 kHz à étudier utilise ce bloc **atpll** qui fournira la fréquence de 114 kHz. 
 
 Notre générateur d'horloge 114 kHz a:
 * une entrée d'horloge (clk)
@@ -37,7 +37,7 @@ Notre générateur d'horloge 114 kHz a:
 
 <br>
 
->Remaque: La porte inverseuse (NOT) permet d'avoir le fonctionnement voulu en prennant en compte le fait que les boutons poussoirs sur la carte DE10-Lite fournissent un niveau logique haut au repos.
+>Remaque: La porte inverseuse (NOT) permet d'avoir le fonctionnement voulu en prenant en compte le fait que les boutons poussoirs sur la carte DE10-Lite fournissent un niveau logique haut au repos.
 
 Quartus nous permet de générer automatiquement le fichier vhdl correspondant au composant dont le schéma à été saisie, ainsi que son _test bench_ (à compléter) nous permettant d'effectuer une simulation du composant. 
 
@@ -138,7 +138,7 @@ ModelSim nous permet alors de simuler notre générateur d'horloge 114kHz à tra
 
 <br>
 
-Sur le chronogramme ci-dessus, on observe effectivement que l'horloge d'entrée (**clk**) a une fréquence de 50MHz, et que l'horloge de sortie (**clk_114k**) a la fréquence souhaité de 114kHz. On voit également le fonctionnement de l'entrée de remise à zéro (**n_reset**) qui, lorsqu'elle est active (à 0), bloque l'état de la sortie, et une fois relâché (passe à 1), recommence le cycle de l'horloge de sortie (**clk_114k**), à savoir un etat logique haut puis une alternance d'etat toutes les demi-periodes.
+Sur le chronogramme ci-dessus, on observe effectivement que l'horloge d'entrée (**clk**) a une fréquence de 50MHz, et que l'horloge de sortie (**clk_114k**) a la fréquence souhaitée de 114kHz. On voit également le fonctionnement de l'entrée de remise à zéro (**n_reset**) qui, lorsqu'elle est active (à 0), bloque l'état de la sortie, et une fois relâché (passe à 1), recommence le cycle de l'horloge de sortie (**clk_114k**), à savoir un état logique haut puis une alternance d'état toutes les demi-périodes.
 
 Une fois la partie théorique validé, nous nous assurons du fonctionnement pratique du composant, en programmant la carte et en effectuant les mesures nécessaires à l'oscilloscope à l'aide d'une sonde, et voici ce que nous obtenons:
 
@@ -147,7 +147,7 @@ Une fois la partie théorique validé, nous nous assurons du fonctionnement prat
 
 <br>
 
-L'oscilloscope mesure bien un signal carré à 114 kHz (à 10 Hz près) en sortie. De plus, lorsqu'on appuie sur le bouton poussoir de la carte, la sortie est bloqué. Notre bloc générateur d'horloge 114 kHz fonctionne donc correctement. Nous pouvont en faire un symbole sur Quartus. 
+L'oscilloscope mesure bien un signal carré à 114 kHz (à 10 Hz près) en sortie. De plus, lorsqu'on appuie sur le bouton-poussoir de la carte, la sortie est bloquée. Notre bloc générateur d'horloge 114 kHz fonctionne donc correctement. Nous pouvons en faire un symbole sur Quartus. 
 
 ![40%center](figures/symbole_gen114k.png)
 <div align="center"> Symbole du générateur d'horloge 114 kHz </div>
@@ -165,7 +165,7 @@ Le bloc générateur de signaux d'horloge va permettre de délivrer à partir du
 Les contraintes du cahier des charges sont les suivantes:
 * les impulsions durent une période de **w_57k**, donc 2 périodes de **w_114k**.
 * le signal **w_57k_48** est délivré en premier
-* le signal **w_57k_24** est en retard d'une periode de **w_114k** par rapport au signal **w_57k_48** kHz pour permettre au codeur biphase d'échantillonner correctement la donnée à coder.
+* le signal **w_57k_24** est en retard d'une période de **w_114k** par rapport au signal **w_57k_48** kHz pour permettre au codeur biphase d'échantillonner correctement la donnée à coder.
 * le signal **w_rd_mem** a une fréquence de 57/48 kHz
 * l'impulsion de **w_rd_mem** se situe entre deux impulsions de **w_57k_48** pour permettre à la mémoire de délivrer sa donnée avant qu'elle ne soit échantillonnée par le codeur biphase. 
 
@@ -329,7 +329,7 @@ Ce _test bench_ nous permet d'obtenir les résultats de simulation suivants:
 
 <br>
 
-Tout d'abord, on remarque que le signal **w_57k** est bien à 57kHz (la demi-periode de l'horloge 114kHz a été arrondie dans le _test bench_, d'où le léger écart de 13Hz). Ensuite, les impulsions durent bien une période de **w_57k**, et **w_57k_24** arrive juste après **w_57k_48**, séparé d'une periode de **w_114k**.
+Tout d'abord, on remarque que le signal **w_57k** est bien à 57kHz (la demi-période de l'horloge 114kHz a été arrondie dans le _test bench_, d'où le léger écart de 13Hz). Ensuite, les impulsions durent bien une période de **w_57k**, et **w_57k_24** arrive juste après **w_57k_48**, séparé d'une période de **w_114k**.
 
 <br>
 
@@ -353,7 +353,7 @@ Les signaux **w_57k_48** et **w_rd_mem** ont une fréquence de 57/48 kHz, et **w
 
 <br>
 
-Enfin, ce dernier chronogramme nous permet de mettre en evidence l'action asynchrone de **n_reset** bel et bien actif à 0, et le comportement synchrone des sorties.
+Enfin, ce dernier chronogramme nous permet de mettre en évidence l'action asynchrone de **n_reset** bel et bien actif à 0, et le comportement synchrone des sorties.
 
 > Ce dernier chronogramme a été obtenus après une légère modification du _test bench_ ("5 ms"->"400 us", "10 ms"->"100 ms")
 
@@ -396,7 +396,7 @@ Le signal **w_57k_24** a bien une fréquence de 57/24 kHz, et **w_57k_48** une f
 
 <br>
 
-Dans cette dernière figure on voit bien que l'impulsion de **w_57k_24** arrive après celle de **w_57k_48**, et que l'impulsion de **w_rd_mem** se situe entre deux impulsions de **w_57k_48**.
+Dans cette dernière figure, on voit bien que l'impulsion de **w_57k_24** arrive après celle de **w_57k_48**, et que l'impulsion de **w_rd_mem** se situe entre deux impulsions de **w_57k_48**.
 
 Notre générateur de signaux d'horloge fonctionne donc comme voulus.
 
@@ -404,7 +404,7 @@ Notre générateur de signaux d'horloge fonctionne donc comme voulus.
 
 ## 3. Compteur d'adresse de la RAM
 
-Ce compteur d'adresses est un compteur qui permet à la RAM bi-port (bloc suivant) de savoir à quelle adresse lire la donnée à distribuer (bit de la trame). C'est un compteur full-synchrone qui incrémente l'adresse générée **adr_read**, à chaque impulsion de **w_rd_mem** (l'entrée s'appelle **en** pour ce bloc). Etant donné que notre trame à envoyer est composée de 416 bits, notre compteur d'adresse doit compter de 0 à 415, car charque bit est rangé à une adresse mémoire. Ainsi, nous obtenons le programme suivant.
+Ce compteur d'adresses est un compteur qui permet à la RAM bi-port (bloc suivant) de savoir à quelle adresse lire la donnée à distribuer (bit de la trame). C'est un compteur full-synchrone qui incrémente l'adresse générée **adr_read**, à chaque impulsion de **w_rd_mem** (l'entrée s'appelle **en** pour ce bloc). Etant donné que notre trame à envoyer est composée de 416 bits, notre compteur d'adresse doit compter de 0 à 415, car chaque bit est rangé à une adresse mémoire. Ainsi, nous obtenons le programme suivant.
 
 ```vhdl
 -- COMPTEUR D'ADRESSE DE LA RAM
@@ -534,7 +534,7 @@ Ces résultats nous montrent d'une part, que le compteur commence à 0 et s'incr
 
 <br>
 
-Tout fonctionne correctement, nous pouvont donc générer le symbole correspondant au programme VHDL de notre compteur d'adresse.
+Tout fonctionne correctement, nous pouvons donc générer le symbole correspondant au programme VHDL de notre compteur d'adresse.
 
 ![40%center](figures/symbole_cpt_adresse.png)
 <div align="center"> Symbole du compteur d'adresse de la RAM </div>
@@ -544,7 +544,7 @@ Tout fonctionne correctement, nous pouvont donc générer le symbole corresponda
 ## 4. Mémoire bi-port
 
 C'est un bloc qui est chargé de transmettre en sortie la donnée **data_read** correspondant l'adresse fournis en entrée **adr_read**.
-Dans cette partie, nous nous intéressons qu'à la transmission de la trame stocké en RAM. Pour ce faire, la trame initiale seras pré-enregistré dans notre RAM, à travers le fichier **Codeur_RDS.mif** qui nous est fournis. Ainsi, nous nous occuperons uniquement de l'entrée d'adresse **adr_read**, l'horloge d'entrée **clk_50M**, et la sortie de donnée **data_read**. Le bloc est constitué de deux sous-blocs, la **ram 2 ports**, et un **diviseur de fréquence par 50**.
+Dans cette partie, nous nous intéressons qu'à la transmission de la trame stockée en RAM. Pour ce faire, la trame initiale sera pré-enregistrée dans notre RAM, à travers le fichier **Codeur_RDS.mif** qui nous est fournis. Ainsi, nous nous occuperons uniquement de l'entrée d'adresse **adr_read**, l'horloge d'entrée **clk_50M**, et la sortie de donnée **data_read**. Le bloc est constitué de deux sous-blocs, la **ram 2 ports**, et un **diviseur de fréquence par 50**.
 
 Le diviseur de fréquence vas nous permettre d'obtenir une horloge 1MHz en sortie (**Q**), à partir d'une horloge 50MHz en entrée (**clk**). Voici ci-dessous les programmes correspondants.
 
@@ -645,7 +645,7 @@ Nous obtenons les résultats de simulation suivants:
 
 <br>
 
-En fournissant un signal d'horloge à 50 MHz (**clk**) en entrée on obtiens bien un signal carré de 1 MHz en sortie (**Q**), donc notre diviseur de fréquence semble fonctionner. Pour le confirmer nous effectuons les mesures à l'oscilloscope.
+En fournissant un signal d'horloge à 50 MHz (**clk**) en entrée, on obtient bien un signal carré de 1 MHz en sortie (**Q**), donc notre diviseur de fréquence semble fonctionner. Pour le confirmer nous effectuons les mesures à l'oscilloscope.
 ![40%center](figures/circuit_test_div_freq_50.png)
 <div align="center"> Circuit test du diviseur de fréquence par 50 </div>
 
@@ -665,7 +665,7 @@ La ram 2 ports est générée par Quartus à partir de nos configurations, aprè
 
 <br>
 
-Nous générons à partir de Quartus, les programmes vhdl correspondant au circuit ci-dessus, puis nous modifions le fichier test bench afin de simuler l'horloge 50 MHz **clk_50M**, et le compteur d'adresse **ard_read**. Les programmes ainsi obtenus sont les suivants:
+Nous générons à partir de Quartus, les programmes vhdl correspondant au circuit ci-dessus, puis nous modifions le fichier _test bench_ afin de simuler l'horloge 50 MHz **clk_50M**, et le compteur d'adresse **ard_read**. Les programmes ainsi obtenus sont les suivants:
 
 
 Bloc mémoire bi-port:
@@ -868,7 +868,7 @@ Nous obtenons les résultats de simulation suivants:
 
 <br>
 
-Nous avons fait en sorte que le compteur d'adresse (**adr_read**) ait le comportement attendus, en l'incrémentant à une fréquence de 57/48 kHz, et en le faisant compter de 0 à 415. D'après les résultats de simulation, la trame obtenus en sortie semble correspondre à la trame initiale pré-enregistré. Une fois arrivé au dernier bit de la trame, la mémoire bi-port revient au premier bit, comme lui impose l'entrée d'adresse. Chaque bit dure aussi longtemp qu'une valeur du compteur. Notre mémoire bi-port fonctionne donc parfaitement et nous pouvons en faire un symbole.
+Nous avons fait en sorte que le compteur d'adresse (**adr_read**) ai le comportement attendu, en l'incrémentant à une fréquence de 57/48 kHz, et en le faisant compter de 0 à 415. D'après les résultats de simulation, la trame obtenue en sortie semble correspondre à la trame initiale pré-enregistrée. Une fois arrivé au dernier bit de la trame, la mémoire bi-port revient au premier bit, comme lui impose l'entrée d'adresse. Chaque bit dure aussi longtemps qu'une valeur du compteur. Notre mémoire bi-port fonctionne donc parfaitement et nous pouvons en faire un symbole.
 
 ![40% center](figures/symbole_ram_biport.png)
 <div align="center"> Symbole de la mémoire bi-port </div>
@@ -891,10 +891,10 @@ Le principe est illustré par le chronogramme suivant:
 
 <br>
 
- L'information en sortie de la ram (bit ram) est traité par le codeur NRZ à 57 kHz/48 (bascule T). Sa sortie est ensuite traitée par le codeur biphase à une fréquence, double avec le principe suivant: si le bit vaut 0, il y a un enchainement 0-1  à cette fréquence double, si le bit vaut 1, il y a enchainement 1-0 à cette même fréquence double. Le seul problème est que en théorie, la sortie d'un tel codeur vaut soit -A, soit +A, pour que la valeure moyenne soit nulle. Ce n'est malheureusement pas possible avec un circuit logique dont la sortie évolue entre 0 et A. La solution est donc de fournir deux sorties complémentées (sortie biphase+ et sortie biphase-) qui seront ensuite traitées par un amplificateur opérationnel monté en soustracteur.
+ L'information en sortie de la ram (bit ram) est traitée par le codeur NRZ à 57 kHz/48 (bascule T). Sa sortie est ensuite traitée par le codeur biphase à une fréquence, double avec le principe suivant: si le bit vaut 0, il y a un enchaînement 0-1  à cette fréquence double, si le bit vaut 1, il y a enchaînement 1-0 à cette même fréquence double. Le seul problème est qu'en théorie, la sortie d'un tel codeur vaut soit -A, soit +A, pour que la valeur moyenne soit nulle. Ce n'est malheureusement pas possible avec un circuit logique dont la sortie évolue entre 0 et A. La solution est donc de fournir deux sorties complémentées (sortie biphase+ et sortie biphase-) qui seront ensuite traitées par un amplificateur opérationnel monté en soustracteur.
 
 
- Dans un premier temps nous nous occupons du deuxième étage réalisant le codage biphase. Ce sous-bloc sera appelé **auto_biphase**. Voici les programmes de ce sous-bloc:
+ Dans un premier temps, nous nous occupons du deuxième étage réalisant le codage biphase. Ce sous-bloc sera appelé **auto_biphase**. Voici les programmes de ce sous-bloc:
 
  ```vhdl
  -- SOUS-BLOC auto_biphase DU CODEUR BIPHASE
@@ -1042,9 +1042,9 @@ Et les résultats de simulation sont les suivants:
 
 <br>
 
-On observe que l'horloge d'entrée simulée a la même allure que le signal **w_57k_24** qui devrait être l'entrée futur de notre bloc, avec une fréquence de 57/24 kHz (2,375kHz). Lorsque l'entrée (**data**) vaut 1, on a une alternance 1-0 sur la sortie **code_plus** et l'inverse sur la sortie complémentaire **code_moins**. Lorsque l'entrée vaut 0, on a une alternance 0-1 sur la sortie **code_plus** et l'inverse sur **code_moins**. Le tout s'effectuant à la fréquence double de celle d'entrée.
+On observe que l'horloge d'entrée simulée a la même allure que le signal **w_57k_24** qui devrait être l'entrée future de notre bloc, avec une fréquence de 57/24 kHz (2,375kHz). Lorsque l'entrée (**data**) vaut 1, on a une alternance 1-0 sur la sortie **code_plus** et l'inverse sur la sortie complémentaire **code_moins**. Lorsque l'entrée vaut 0, on a une alternance 0-1 sur la sortie **code_plus** et l'inverse sur **code_moins**. Le tout s'effectuant à la fréquence double de celle d'entrée.
 
-Notre sous-bloc **auto_biphase** est donc fonctionnel, nous en faisont un symbole.
+Notre sous-bloc **auto_biphase** est donc fonctionnel, nous en faisons un symbole.
 
 ![40%center](figures/symbole_auto_biphase.png)
 <div align="center"> Symbole du sous-bloc auto_biphase </div>
@@ -1058,7 +1058,7 @@ Il ne reste plus qu'a réaliser le circuit complet en associant ce sous-bloc au 
 
 <br>
  
-Afin de tester le fonctionnement de ce circuit, nous générons sur Quartus les programmes VHDL correspondants (circuit+_test bench_)
+Afin de tester le fonctionnement de ce circuit, nous générons sur Quartus les programmes VHDL correspondants (circuit+_test bench_).
 
 ```vhdl
 -- Copyright (C) 2017  Intel Corporation. All rights reserved.
@@ -1298,7 +1298,7 @@ Notre codeur biphase fonctionne donc parfaitement bien, nous pouvons en faire un
 
 <br>
 
-Nous avons désormais tous les blocs nécessaire pour la première partie. Il ne reste plus qu'à les assembler, puis à envoyer le programme sur la carte pour qu'on puisse enfin envoyer la trame RDS pré-enregistré. 
+Nous avons désormais tous les blocs nécessaire pour la première partie. Il ne reste plus qu'à les assembler, puis à envoyer le programme sur la carte pour qu'on puisse enfin envoyer la trame RDS pré-enregistrée. 
 
 ![40%center](figures/circuit_partie1.png)
 <div align="center"> Circuit de la partie 1 du codeur RDS  </div>
