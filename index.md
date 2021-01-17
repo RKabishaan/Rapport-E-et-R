@@ -557,10 +557,6 @@ Tout fonctionne correctement, nous pouvons donc générer le symbole corresponda
 
 <br>
 
-<br>
-
-<br>
-
 ## 4. Mémoire bi-port
 
 C'est un bloc qui est chargé de transmettre en sortie la donnée **data_read** correspondant l'adresse fournis en entrée **adr_read**.
