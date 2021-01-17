@@ -13,14 +13,14 @@ Cette étude sera divisée en deux parties:
 
 Dans un premier temps la trame binaire est fournie pour se focaliser uniquement sur le cadencement de la transmission. Cette partie consiste à générer les signaux d'horloge nécessaires pour la lecture et le codage de la trame binaire, à lire cette dernière bit pas bit en boucle d'une mémoire de type RAM bi port, et à coder en biphase. Un montage analogique sera branché en sortie et permettra à un récepteur du commerce d'afficher le nom de la station émise "GE1 FM".
 
-Puis dans un second temps, le nom de la radio sera reçue par liaison série et la trame sera alors à coder selon la norme. Pour cela, un microprocesseur NIOS sera implanté dans le FPGA et le programme qui sera réalisé donnera la possibilité de recevoir le nom par liaison série, de former les quatre groupes nécessaires de la trame, et d'écrire les bits correspondants dans la mémoire RAM bi port. La première partie qui récupère le contenu de la RAM enverra donc à l'émetteur, le nouveau nom. 
+Puis dans un second temps, le nom de la radio sera reçue par liaison série et la trame sera alors à coder selon la norme. Pour cela, un microprocesseur NIOS sera implanté dans le FPGA (**F**iel **P**rogrammable **G**ate **A**rrays) et le programme qui sera réalisé donnera la possibilité de recevoir le nom par liaison série, de former les quatre groupes nécessaires de la trame, et d'écrire les bits correspondants dans la mémoire RAM bi port. La première partie qui récupère le contenu de la RAM enverra donc à l'émetteur, le nouveau nom. 
 
 ![40%center](figures/structure_CodeurRDS.png)
 <div align="center"> Structure du codeur de trame RDS </div>
 
 <br>
 
-# Partie 1: Transmission de la trame binaire stocké en RAM
+# Partie 1 : Transmission de la trame binaire stocké en RAM
 <br>
 
 ## 1. Générateur d'horloge 114 kHz
@@ -1312,4 +1312,647 @@ Comme nous l'avions expliqué, la sortie de ce codeur doit être comprise entre 
 <div align="center"> Mise en pratique de la partie 1 du codeur RDS  </div>
 <br>
 
-Notre première partie du codeur RDS fonctionne parfaitement bien, nous recevons bien le nom de la station "GE1 FM" codé par la trame pré-enregistré.
+Notre première partie du codeur RDS fonctionne parfaitement bien, nous recevons bien le nom de la station "GE1 FM" codé par la trame pré-enregistré. Nous pouvons donc nous attaquer à la partie 2, la modification du texte en temps réel.
+
+# Partie 2 : microcontrôleur et production de la trame en RAM
+
+<br>
+
+Dans cette deuxième partie l'objectif est de permettre au système de :
+- **Recevoir** en temps réel le texte saisi par l'utilisateur.
+- **Générer** une nouvelle trame en fonction du texte saisi.
+- **Envoyer** cette nouvelle trame à la RAM de notre codeur RDS.
+
+Pour pouvoir faire tout ça, il faut implanter dans notre FPGA, un microcontrôleur. Comme annoncé dans l'introduction, nous allons utiliser le NIOS de chez Altera, qui est un microcontrôleur modulable selon les besoins. Nous pouvons y ajouter les composants que l'on souhaite grâce à l'outil Platform Designer de Quartus. 
+
+## 1. Conception du microcontrôleur
+
+Notre microcontrôleur a besoin de :
+
+- Mémoire [**On-Chip Memory (RAM or ROM)**] - Pour stocker les données, les variables, les instructions...
+
+- Microprocesseur [**Nios II/s Processor**] - Pour effectuer les calculs
+
+- **JTAG UART**- Pour la communication entre le PC et le microcontrôleur NIOS (téléchargement du programme à executer, debug...).
+
+- **System ID peripheral** - Pour éviter le téléchargement de programme compilé pour un système différent, qui risquerait donc d'endommager la carte.
+
+- Port de liaison série [**UART (RS-232 Serial Port)**] - Pour recevoir le texte saisi par l'utilisateur.
+
+- 4 Ports [**PIO**] - Pour les signaux:
+	- _wr_data_ - 1 bit 	- sortie
+	- _wr_en_ 	- 1 bit 	- sortie
+	- _wr_clk_ 	- 1 bit 	- sortie
+	- _wr_adr_ 	- 9 bits 	- sortie
+
+> Remarque : L'horloge source comprenant l'entrée d'horloge et l'entrée de remise à zéro est déjà présente lors de la création d'un nouveau design.
+
+Nous ajoutons donc ces différents composants à notre microcontrôleur sur Platform Designer en prennant le soin de bien relier les différents ports comme il se doit, après quoi nous attribuons des adresses aux composants en cliquant sur "Assign Base Addresses", puis nous attribuons des valeurs dans la colonne "IRQ" pour définir la priorité des interruptions entre celles du JTAG UART et celles du UART RS-232 (ces valeurs ont en réalité peu d'importance dans notre cas). Enfin, nous générons les différents fichiers de notre sytème.
+
+![40%center](figures/systeme_complet.png)
+<div align="center"> Contenus complet du microcontrôleur </div>
+<br>
+
+Sur Quartus nous ajoutons notre microcontrôleur au circuit de notre codeur RDS, puis nous relions les différents ports comme convenus.
+
+![40%center](figures/circuit_final.png)
+<div align="center"> Circuit complet du codeur RDS </div>
+<br>
+
+Maintenant que notre microcontrôleur est prêt, il ne reste plus qu'a le programmer.
+
+
+## 2. Programmation du microcontrôleur
+
+La programmation de notre microcontrôleur vas se faire en 4 étapes:
+- Etape 1 : Modifier le contenus de la mémoire - Pour vérifier que la communication avec la RAM bi-port est maitrisé.
+- Etape 2 : Envoyer la trame initiale contenant "GE1 FM" - Pour vérifier le fonctionnement de la fonction d'envoie de la trame.
+- Etape 3 : Modifier le texte en dur (directement dans le programme avant de compiler)  - Pour vérifier le fonctionnement de la fonction de génération de la trame en fonction du texte donné. 
+- Etape 4 : Modifier le texte en temps réel, par liaison série - Pour vérifier le fonctionnement de la fonction de réception du texte saisi par l'utilisateur. Et c'est surtout le but final de notre codeur RDS.
+
+### Etape 1 : Modifier le contenus de la mémoire
+
+Pour modifier le contenus de la mémoire et pouvoir vérifier que ça a fonctionné, nous allons envoyer une série de bit alternant entre 1 et 0 à des adresses qui se succèdents. De cette manière, on devrais remarquer facilement le changement du contenus de la mémoire en observant la sortie de la RAM bi-port.
+
+Voici le programme en C++ qui fait cela:
+
+```c++
+#include "sys/alt_stdio.h"
+#include "system.h"
+#include "altera_avalon_pio_regs.h"
+#include "altera_avalon_uart_regs.h"
+
+
+int main()
+{
+	int i, j;
+
+	alt_putstr("Hello from Nios II!\n");
+
+	IOWR_ALTERA_AVALON_PIO_DATA(WR_CLK_BASE, 0); 	// wr_clk = 0;
+	IOWR_ALTERA_AVALON_PIO_DATA(WR_EN_BASE, 1);  	// wr_en = 1; (active l'écriture à la RAM)
+	for (i=0; i<416; i++)
+	{
+
+		IOWR_ALTERA_AVALON_PIO_DATA(WR_ADR_BASE, i);      // wr_adr = i; (i= 0 -> 415)
+		IOWR_ALTERA_AVALON_PIO_DATA(WR_DATA_BASE, (i%2)); // wr_data = i%2; (altrerne entre 1 et 0)
+
+		IOWR_ALTERA_AVALON_PIO_DATA(WR_CLK_BASE, 1);      // wr_clk = 1;    }
+		for(j=0; j<1000; j++);							  // temporisation  } impulsion d'horloge
+		IOWR_ALTERA_AVALON_PIO_DATA(WR_CLK_BASE, 0);      // wr_clk = 0;    }
+	}
+	IOWR_ALTERA_AVALON_PIO_DATA(WR_EN_BASE, 0);  	// wr_en = 0; (désactive l'écriture à la RAM)
+
+
+	/* Event loop never exits. */
+	while (1);
+
+	return 0;
+}
+```
+
+On execute ce programme sur la carte et voici ce que l'on observe en sortie de la RAM bi-port. 
+
+![40%center](figures/uC_etape1.png)
+<div align="center"> Oscilloscope: sortie de la RAM bi-port </div>
+<br>
+
+On retrouve bien, une alternance régulière entre des bits à 1 et des bits à 0.
+
+La communication avec la RAM bi-port est maitrisé, nous pouvons donc passer à l'étape suivante
+
+### Etape 2 : Envoyer la trame initiale contenant "GE1 FM"
+
+Dans cette étape nous allons simplement renvoyer la trame dont on connais la valeur de chaque bit, afin de vérifier que notre fonction d'envoie de trames fonctionne sans problème. Nous allons donc créer un tableau contenant les 16 blocs de la trame RDS et l'envoyer à la RAM bi-port grâce à une nouvelle fonction que nous allons coder.
+
+Voici le programme:
+```c++
+#include "sys/alt_stdio.h"
+#include "system.h"
+#include "altera_avalon_pio_regs.h"
+#include "altera_avalon_uart_regs.h"
+#include "stdio.h"
+
+
+void fonction ();
+void send_bit(short address, int data);
+void send_frame(int * frame);
+
+int main()
+{
+	// trame initiale contenant "GE1 FM"
+	int frame[16]={	0x3C87528,
+					0x000229B,
+					0x38382C9,
+					0x11D1794,
+
+					0x3C87528,
+					0x0002722,
+					0x38382C9,
+					0x0C4830B,
+
+					0x3C87528,
+					0x00029E9,
+					0x38382C9,
+					0x119344B,
+
+					0x3C87528,
+					0x0002C50,
+					0x38382C9,
+					0x08080DC};
+
+
+	alt_putstr("Hello from Nios II!\n");
+
+	send_frame(frame); // envoie la trame à la RAM bi-port
+
+	/* Event loop never exits. */
+	while (1);
+
+	return 0;
+}
+
+/*********************************************************************************************************************/
+// Fonction qui envoie un bit à la RAM bi-port (modifie la valeur d'un seul bit)
+void send_bit(short address, int data)
+{
+	IOWR_ALTERA_AVALON_PIO_DATA(WR_CLK_BASE, 0);	  //wr_clk = 0;
+	IOWR_ALTERA_AVALON_PIO_DATA(WR_EN_BASE, 1); 	  //wr_en = 1;
+
+	IOWR_ALTERA_AVALON_PIO_DATA(WR_ADR_BASE, address);//wr_address = address;
+
+	// si data n'est pas nul, envoie 1, sinon, envoie 0
+	if(data)
+		IOWR_ALTERA_AVALON_PIO_DATA(WR_DATA_BASE, 1);
+	else
+		IOWR_ALTERA_AVALON_PIO_DATA(WR_DATA_BASE, 0);
+
+	// impulsion d'horloge
+	IOWR_ALTERA_AVALON_PIO_DATA(WR_CLK_BASE, 1);  	  //wr_clk = 1;
+	for(int j=0; j<1000; j++);                        //temporisation
+	IOWR_ALTERA_AVALON_PIO_DATA(WR_CLK_BASE, 0);      //wr_clk = 0;
+
+	IOWR_ALTERA_AVALON_PIO_DATA(WR_EN_BASE, 0);		  //wr_en = 0;
+}
+
+/*********************************************************************************************************************/
+// Fonction qui envoie une trame entière à la RAM bi-port
+void send_frame(int * frame)
+{
+	// boucle pour les 416 bits
+	for(short address=0; address<416; address++)
+	{
+		//affiche sur la console, le résultat du masque sur le bloc de la trame
+		//le masque permet d'isoler le bit du bloc
+		printf("%x\n", frame[address/26]&(0x0000001<<(25-(address%26)))); 
+		//envoie le bit de la trame a l'adresse
+		send_bit(address, (frame[address/26]&(0x0000001<<(25-(address%26)) ))  ); 
+	}
+}
+```
+
+Nous vérifions donc que nous recevons bien "GE1 FM" sur le récepteur après avoir exécuté le programme.
+
+![40%center](figures/prog2_GE1FM.jpg)
+<div align="center"> Récepteur FM RDS: "GE1 FM" </div>
+<br>
+
+Notre fonction d'envoie de trames RDS est fonctionnelle, nous pouvons donc passer à l'étape suivante.
+
+
+### Etape 3 : Modifier le texte en dur 
+
+Dans cette étape nous allons tenter d'envoyer une nouvelle trame permettant d'afficher un nouveau nom de station qui seras saisis en dur dans le programme, avant de compiler. Nous allons donc créer une nouvelle fonction dont l'objectif seras de créer à partir du text donné, la nouvelle trame à envoyer. 
+
+Elle devras donc :
+- reprendre la trame initiale
+- modifier les bits dédiés au texte
+- recalculer le CRC de chaque bloc (Le CRC est un code de détection d'erreur)
+
+Voici le Programme en question:
+```c++
+#include "sys/alt_stdio.h"
+#include "system.h"
+#include "altera_avalon_pio_regs.h"
+#include "altera_avalon_uart_regs.h"
+
+
+void send_bit(short address, int data);
+void send_frame(unsigned long * frame);
+void create_frame_from_text(char * text, unsigned long * frame);
+void insert_checkwords(unsigned short* Tab_blocs, unsigned long* Tab_trame);
+
+
+int main()
+{
+	// trame initiale contenant "GE1 FM"
+	unsigned long frame[16]={	0x3C87528,
+								0x000229B,
+								0x38382C9,
+								0x11D1794,
+
+								0x3C87528,
+								0x0002722,
+								0x3838239,
+								0x0C4830B,
+
+								0x3C87528,
+								0x00029E9,
+								0x38382C9,
+								0x119344B,
+
+								0x3C87528,
+								0x0002C50,
+								0x38382C9,
+								0x08080DC};
+
+
+	alt_putstr("Hello from Nios II!\n");
+
+	//crée une trame à partir du texte donné "KABI FM"
+	create_frame_from_text("KABI FM ", frame);
+	//envoie la trame
+	send_frame(frame);
+
+	/* Event loop never exits. */
+	while (1);
+
+	return 0;
+}
+
+/*********************************************************************************************************************/
+// Fonction qui envoie un bit à la RAM bi-port (modifie la valeur d'un seul bit)
+void send_bit(short address, int data)
+{
+	IOWR_ALTERA_AVALON_PIO_DATA(WR_CLK_BASE, 0);	  //wr_clk = 0;
+	IOWR_ALTERA_AVALON_PIO_DATA(WR_EN_BASE, 1); 	  //wr_en = 1;
+
+	IOWR_ALTERA_AVALON_PIO_DATA(WR_ADR_BASE, address);//wr_address = address;
+
+	// si data n'est pas nul, envoie 1, sinon, envoie 0
+	if(data)
+		IOWR_ALTERA_AVALON_PIO_DATA(WR_DATA_BASE, 1);
+	else
+		IOWR_ALTERA_AVALON_PIO_DATA(WR_DATA_BASE, 0);
+
+	// impulsion d'horloge
+	IOWR_ALTERA_AVALON_PIO_DATA(WR_CLK_BASE, 1);  	  //wr_clk = 1;
+	for(int j=0; j<1000; j++);                        //temporisation
+	IOWR_ALTERA_AVALON_PIO_DATA(WR_CLK_BASE, 0);      //wr_clk = 0;
+
+	IOWR_ALTERA_AVALON_PIO_DATA(WR_EN_BASE, 0);		  //wr_en = 0;
+}
+
+/*********************************************************************************************************************/
+// Fonction qui envoie une trame (frame) entière à la RAM bi-port
+void send_frame(unsigned long * frame)
+{
+	// boucle pour les 416 bits
+	for(short address=0; address<416; address++)
+	{
+		//envoie le bit de la trame a l'adresse
+		send_bit(address, (frame[address/26]&(0x0000001<<(25-(address%26)) ))  ); 
+		//le masque permet d'isoler le bit du bloc
+	}
+}
+
+/*********************************************************************************************************************/
+// Fonction qui recrée une trame (frame) à partir du texte (text) donné
+void create_frame_from_text(char * text, unsigned long * frame)
+{
+	unsigned short block_data[16]={	0xF21D,
+									0x0008,
+									0xE0E0,
+									0x0000,	//0x4745 = valeur initiale
+
+									0xF21D,
+									0x0009,
+									0xE0E0,
+									0x0000,	//0x3120 = valeur initiale
+
+									0xF21D,
+									0x000A,
+									0xE0E0,
+									0x0000,	//0x464D = valeur initiale
+
+									0xF21D,
+									0x000B,
+									0xE0E0,
+									0x0000};//0x2020 = valeur initiale
+
+
+	// remplace chaque caractere null par un espace
+	for(short i_char=0; i_char<8; i_char++)
+	{
+		if(text[i_char] == '\0')
+			text[i_char] = ' ';
+	}
+
+	// ajoute l'information de chaque caractere dans la trame de donnee (ne contenant pas le CRC)
+	for(short i_char=0; i_char<8; i_char++)
+	{
+		block_data[((i_char/2)*4)+3] = block_data[((i_char/2)*4)+3] | (((unsigned short)text[i_char]<<(8*((i_char+1)%2))) );
+	}
+
+	// remplis la trame complete avec les donnees de chaque bloc et le CRC correspondant
+	insert_checkwords(block_data, frame);
+
+}
+
+/*********************************************************************************************************************/
+// Fonction qui recalcul le CRC à partir des blocs de données (Tab_blocs) et complete la trame (Tab_trame)
+void insert_checkwords(unsigned short* Tab_blocs, unsigned long* Tab_trame)
+{
+	unsigned short message;
+	unsigned char mlen=16;
+	unsigned short POLY = 0x05B9;							// polynome generateur = 10110111001, g(x)=x^10+x^8+x^7+x^5+x^4+x^3+1
+	unsigned char PLEN = 10;
+	unsigned short OFFSET[] = {252, 408, 360, 436, 848};	// dans l'ordre offset A, offset B, offset C, offset D, offset C'
+//	unsigned short SYNDROME[] = {383, 14, 303, 663, 748};
+	unsigned short checkword;
+	unsigned short reg;
+
+	unsigned char i_blocs;
+	unsigned char i;
+
+
+	// pour chaque bloc
+	// ----------------
+	for (i_blocs=0; i_blocs<16; i_blocs++)
+	{
+		// calcul du checkword pour ce bloc
+		// --------------------------------
+
+		reg = 0;
+		message = Tab_blocs[i_blocs];
+
+		for (i=mlen; i>0; i--)
+		{
+			reg = (reg<<1) | ((message>>(i-1))&0x1);
+			if (reg & (1<<PLEN))
+				reg = reg^POLY;
+		}
+
+		for (i=PLEN; i>0; i--)
+		{
+			reg = reg<<1;
+			if (reg & (1<<PLEN))
+				reg = reg^POLY;
+		}
+
+		checkword = reg & ((1<<PLEN)-1);
+		checkword = checkword ^ OFFSET[i_blocs%4];		// i_blocs%4 pour prendre le modulo : 0->offset A, 1->offset B, 2->offset C, 3->offset D
+
+		Tab_trame[i_blocs] = 0;
+		Tab_trame[i_blocs] = (((unsigned long)message)<<10) | (((unsigned long)checkword) & 0x000003FF);
+	}
+}
+
+```
+
+
+Dans cet exemple, nous souhaitons envoyer "KABI FM ". Nous exécutons le programme et voici ce que l'on observe sur le récepteur.
+
+![40%center](figures/KABIFM.jpg)
+<div align="center"> Récepteur FM RDS: "KABI FM" </div>
+<br>
+
+Nous sommes donc en mesure d'envoyer n'importe quel text au récepteur FM RDS, il ne manque plus qu'a permettre cela en temps réel, par liaison série.
+
+### Etape 4 : Modifier le texte en temps réel, par liaison série
+
+Dans cette ultime étape, nous voulons commander le texte envoyé, en temps réel par liaison série. Dans notre cas sur l'ordinateur. Il nous suffis donc d'ajouter une fonction de réception et de traitement de l'information reçu par liaison série, qui, en fonction de l'information reçu, remet en forme la donnée pour obtenir au final un texte de 8 caractères qui seras traité par les fonctions codés précédemment.
+
+```c++
+#include "sys/alt_stdio.h"
+#include "system.h"
+#include "altera_avalon_pio_regs.h"
+#include "altera_avalon_uart_regs.h"
+#include "stdio.h"
+
+
+void send_bit(short address, int data);
+void send_frame(unsigned long * frame);
+void create_frame_from_text(char * text, unsigned long * frame);
+void insert_checkwords(unsigned short* Tab_blocs, unsigned long* Tab_trame);
+void rs232_recieve_text(char text[8+1]);
+
+
+int main()
+{
+	// trame initiale contenant "GE1 FM"
+	unsigned long frame[16]={	0x3C87528,
+								0x000229B,
+								0x38382C9,
+								0x11D1794,
+
+								0x3C87528,
+								0x0002722,
+								0x3838239,
+								0x0C4830B,
+
+								0x3C87528,
+								0x00029E9,
+								0x38382C9,
+								0x119344B,
+
+								0x3C87528,
+								0x0002C50,
+								0x38382C9,
+								0x08080DC};
+
+	// texte (nom de la station) à envoyer
+	char text[8+1]={'G',
+			        'E',
+					'1',
+					' ',
+					'F',
+					'M',
+					' ',
+					' ',
+					' '};
+
+
+	alt_putstr("Hello from Nios II!\n");
+
+
+	/* Event loop never exits. */
+	while (1)
+	{
+		rs232_recieve_text(text); //reception du texte par liaison série
+		printf("mon text = %s\n",text); //affichage sur la console du texte reçu
+		
+		create_frame_from_text(text, frame); //crée une trame à partir du texte donné
+		send_frame(frame); // envoie la trame
+	}
+
+	return 0;
+}
+
+
+/*********************************************************************************************************************/
+// Fonction qui envoie un bit à la RAM bi-port (modifie la valeur d'un seul bit)
+void send_bit(short address, int data)
+{
+	IOWR_ALTERA_AVALON_PIO_DATA(WR_CLK_BASE, 0);	  //wr_clk = 0;
+	IOWR_ALTERA_AVALON_PIO_DATA(WR_EN_BASE, 1); 	  //wr_en = 1;
+
+	IOWR_ALTERA_AVALON_PIO_DATA(WR_ADR_BASE, address);//wr_address = address;
+
+	// si data n'est pas nul, envoie 1, sinon, envoie 0
+	if(data)
+		IOWR_ALTERA_AVALON_PIO_DATA(WR_DATA_BASE, 1);
+	else
+		IOWR_ALTERA_AVALON_PIO_DATA(WR_DATA_BASE, 0);
+
+	// impulsion d'horloge
+	IOWR_ALTERA_AVALON_PIO_DATA(WR_CLK_BASE, 1);  	  //wr_clk = 1;
+	for(int j=0; j<1000; j++);                        //temporisation
+	IOWR_ALTERA_AVALON_PIO_DATA(WR_CLK_BASE, 0);      //wr_clk = 0;
+
+	IOWR_ALTERA_AVALON_PIO_DATA(WR_EN_BASE, 0);		  //wr_en = 0;
+}
+
+/*********************************************************************************************************************/
+// Fonction qui envoie une trame (frame) entière à la RAM bi-port
+void send_frame(unsigned long * frame)
+{
+	// boucle pour les 416 bits
+	for(short address=0; address<416; address++)
+	{
+		//envoie le bit de la trame a l'adresse
+		send_bit(address, (frame[address/26]&(0x0000001<<(25-(address%26)) ))  ); 
+		//le masque permet d'isoler le bit du bloc
+	}
+}
+
+/*********************************************************************************************************************/
+// Fonction qui recrée une trame (frame) à partir du texte (text) donné
+void create_frame_from_text(char * text, unsigned long * frame)
+{
+	unsigned short block_data[16]={	0xF21D,
+									0x0008,
+									0xE0E0,
+									0x0000,	//0x4745 = valeur initiale
+
+									0xF21D,
+									0x0009,
+									0xE0E0,
+									0x0000,	//0x3120 = valeur initiale
+
+									0xF21D,
+									0x000A,
+									0xE0E0,
+									0x0000,	//0x464D = valeur initiale
+
+									0xF21D,
+									0x000B,
+									0xE0E0,
+									0x0000};//0x2020 = valeur initiale
+
+
+	// remplace chaque caractere null par un espace
+	for(short i_char=0; i_char<8; i_char++)
+	{
+		if(text[i_char] == '\0')
+			text[i_char] = ' ';
+	}
+
+	// ajoute l'information de chaque caractere dans la trame de donnee (ne contenant pas le CRC)
+	for(short i_char=0; i_char<8; i_char++)
+	{
+		block_data[((i_char/2)*4)+3] = block_data[((i_char/2)*4)+3] | (((unsigned short)text[i_char]<<(8*((i_char+1)%2))) );
+	}
+
+	// remplis la trame complete avec les donnees de chaque bloc et le CRC correspondant
+	insert_checkwords(block_data, frame);
+
+}
+
+/*********************************************************************************************************************/
+// Fonction qui recalcul le CRC à partir des blocs de données (Tab_blocs) et complete la trame (Tab_trame)
+void insert_checkwords(unsigned short* Tab_blocs, unsigned long* Tab_trame)
+{
+	unsigned short message;
+	unsigned char mlen=16;
+	unsigned short POLY = 0x05B9;							// polynome generateur = 10110111001, g(x)=x^10+x^8+x^7+x^5+x^4+x^3+1
+	unsigned char PLEN = 10;
+	unsigned short OFFSET[] = {252, 408, 360, 436, 848};	// dans l'ordre offset A, offset B, offset C, offset D, offset C'
+//	unsigned short SYNDROME[] = {383, 14, 303, 663, 748};
+	unsigned short checkword;
+	unsigned short reg;
+
+	unsigned char i_blocs;
+	unsigned char i;
+
+
+	// pour chaque bloc
+	// ----------------
+	for (i_blocs=0; i_blocs<16; i_blocs++)
+	{
+		// calcul du checkword pour ce bloc
+		// --------------------------------
+
+		reg = 0;
+		message = Tab_blocs[i_blocs];
+
+		for (i=mlen; i>0; i--)
+		{
+			reg = (reg<<1) | ((message>>(i-1))&0x1);
+			if (reg & (1<<PLEN))
+				reg = reg^POLY;
+		}
+
+		for (i=PLEN; i>0; i--)
+		{
+			reg = reg<<1;
+			if (reg & (1<<PLEN))
+				reg = reg^POLY;
+		}
+
+		checkword = reg & ((1<<PLEN)-1);
+		checkword = checkword ^ OFFSET[i_blocs%4];		// i_blocs%4 pour prendre le modulo : 0->offset A, 1->offset B, 2->offset C, 3->offset D
+
+		Tab_trame[i_blocs] = 0;
+		Tab_trame[i_blocs] = (((unsigned long)message)<<10) | (((unsigned long)checkword) & 0x000003FF);
+	}
+}
+
+/*********************************************************************************************************************/
+// Fonction qui donne le texte (text) saisi 
+void rs232_recieve_text(char text[8+1])
+{
+	short i=0;
+	short end_of_array=0;
+
+	//Tant qu'il n'y a pas de caractère de fin de chaîne et qu'il y a moins de 9 caractères
+	while((end_of_array==0) && (i<9))
+	{
+		if( (IORD_ALTERA_AVALON_UART_STATUS(RS232_BASE)&0x0080) ) //si on a reçu un caractère
+		{
+			text[i] = (char)IORD_ALTERA_AVALON_UART_RXDATA(RS232_BASE);//ajoute le caractère au texte
+
+			if(text[i]=='\n') //si c'est le caractère de fin de chaîne
+			{
+				// remplis le texte par des caractères nuls 
+				//(en remplacant le caractère de fin de chaîne également)
+				for (short j=i; j<9; j++)
+					text[j]=0;
+
+				end_of_array=1; //indique qu'on a atteint la fin de la chaîne
+			}
+
+			i=(i+1)%9; //indice variant de 0 à 8, en boucle
+		}
+	}
+}
+
+```
+
+Nous exécutons le programme ci-dessus, et nous communiquons des textes au microcontrôleur par liaison série grâce au logiciel Termite.
+
+![40%center](figures/liaison_serie.jpg)
+<div align="center"> Résultats de communication de textes par liaison série </div>
+<br>
+
+Les résultats sont très satisfaisants, les textes s'affichent bel et bien sur le récepteur, et ce, en temps réel.
