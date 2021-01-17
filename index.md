@@ -149,7 +149,7 @@ Une fois la partie théorique validé, nous nous assurons du fonctionnement prat
 
 L'oscilloscope mesure bien un signal carré à 114 kHz (à 10 Hz près) en sortie. De plus, lorsqu'on appuie sur le bouton-poussoir de la carte, la sortie est bloquée. Notre bloc générateur d'horloge 114 kHz fonctionne donc correctement. Nous pouvons en faire un symbole sur Quartus. 
 
-![40%center](figures/symbole_gen114k.png)
+![40%center](figures/symbole_gen114k.png =10x10)
 <div align="center"> Symbole du générateur d'horloge 114 kHz </div>
 
 <br>
