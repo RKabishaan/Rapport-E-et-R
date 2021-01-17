@@ -142,14 +142,15 @@ Sur le chronogramme ci-dessus, on observe effectivement que l'horloge d'entrée 
 
 Une fois la partie théorique validé, nous nous assurons du fonctionnement pratique du composant, en programmant la carte et en effectuant les mesures nécessaires à l'oscilloscope à l'aide d'une sonde, et voici ce que nous obtenons:
 
-![40%center](figures/114kHz_Oscilo.png)
+
+<div align="center"> <img src="figures/114kHz_Oscilo.png" width="350"/>
 <div align="center"> Oscilloscope: Sortie du générateur d'horloge  114kHz </div>
 
 <br>
 
 L'oscilloscope mesure bien un signal carré à 114 kHz (à 10 Hz près) en sortie. De plus, lorsqu'on appuie sur le bouton-poussoir de la carte, la sortie est bloquée. Notre bloc générateur d'horloge 114 kHz fonctionne donc correctement. Nous pouvons en faire un symbole sur Quartus. 
 
-![40%center](figures/symbole_gen114k.png =10x10)
+<div align="center"> <img src="figures/symbole_gen114k.png" width="200"/>
 <div align="center"> Symbole du générateur d'horloge 114 kHz </div>
 
 <br>
@@ -370,8 +371,8 @@ Après avoir généré le symbole du générateur de signaux d'horloges à parti
 Les mesures à l'oscilloscope donnent les résultats suivants:
 
 <br>
+<div align="center"> <img src="figures/gen_horloges_57k.png" width="350"/>
 
-![40%center](figures/gen_horloges_57k.png)
 <div align="center"> Oscilloscope: Sortie w_57k du générateur de signaux d'horloge (GPIO1) </div>
 
 <br>
@@ -381,8 +382,10 @@ Le signal **w_57k** est bien carré, de fréquence 57kHz
 
 <br>
 
-![40%center](figures/gen_horloge_cursor_58.png)
-![40%center](figures/gen_horloge_cursor_24.png)
+<div align="center"> <img src="figures/gen_horloge_cursor_58.png" width="350"/>
+
+<div align="center"> <img src="figures/gen_horloge_cursor_24.png" width="350"/>
+
 <div align="center"> Oscilloscope: Sorties du générateur de signaux d'horloge (w_rd_mem, w_57k_24, w_57_58) </div>
 
 <br>
@@ -391,7 +394,7 @@ Le signal **w_57k_24** a bien une fréquence de 57/24 kHz, et **w_57k_48** une f
 
 <br>
 
-![40%center](figures/gen_horloge_globale.png)
+<div align="center"> <img src="figures/gen_horloge_globale.png" width="350"/>
 <div align="center"> Oscilloscope: vue globale des sorties du générateur de signaux d'horloge (w_rd_mem, w_57k_24, w_57_58) </div>
 
 <br>
@@ -536,7 +539,7 @@ Ces résultats nous montrent d'une part, que le compteur commence à 0 et s'incr
 
 Tout fonctionne correctement, nous pouvons donc générer le symbole correspondant au programme VHDL de notre compteur d'adresse.
 
-![40%center](figures/symbole_cpt_adresse.png)
+<div align="center"> <img src="figures/symbole_cpt_adresse.png" width="200"/>
 <div align="center"> Symbole du compteur d'adresse de la RAM </div>
 
 <br>
@@ -651,7 +654,7 @@ En fournissant un signal d'horloge à 50 MHz (**clk**) en entrée, on obtient bi
 
 <br>
 
-![40%center](figures/div_freq_50.png)
+<div align="center"> <img src="figures/div_freq_50.png" width="350"/>
 <div align="center"> Oscilloscope: Sortie du diviseur de fréquence par 50 </div>
 
 <br>
@@ -870,7 +873,7 @@ Nous obtenons les résultats de simulation suivants:
 
 Nous avons fait en sorte que le compteur d'adresse (**adr_read**) ai le comportement attendu, en l'incrémentant à une fréquence de 57/48 kHz, et en le faisant compter de 0 à 415. D'après les résultats de simulation, la trame obtenue en sortie semble correspondre à la trame initiale pré-enregistrée. Une fois arrivé au dernier bit de la trame, la mémoire bi-port revient au premier bit, comme lui impose l'entrée d'adresse. Chaque bit dure aussi longtemps qu'une valeur du compteur. Notre mémoire bi-port fonctionne donc parfaitement et nous pouvons en faire un symbole.
 
-![40% center](figures/symbole_ram_biport.png)
+<div align="center"> <img src="figures/symbole_ram_biport.png" width="200"/>
 <div align="center"> Symbole de la mémoire bi-port </div>
 
 <br>
@@ -1307,8 +1310,10 @@ Nous avons désormais tous les blocs nécessaire pour la première partie. Il ne
 
 Comme nous l'avions expliqué, la sortie de ce codeur doit être comprise entre -A et +A, c'est pourquoi nous connectons un circuit analogique à notre carte DE10-Lite. Ce complément vas nous permettre de retrouver le signal souhaité (compris entre -A et +A) grâce à un amplificateur opérationnel monté en soustracteur entre les sorties **code_plus** et **code_moins**. Ce signal est ensuite modulé en fréquence, puis envoyé par ondes électromagnétiques grâce à une antenne.
 
-![40%center](figures/montage_final_partie1.png)
-![40%center](figures/montage_final_partie1_GE1_FM.png)
+<div align="center"> <img src="figures/montage_final_partie1.png" width="400"/>
+
+<div align="center"> <img src="figures/montage_final_partie1_GE1_FM.png" width="400"/>
+
 <div align="center"> Mise en pratique de la partie 1 du codeur RDS  </div>
 <br>
 
@@ -1413,7 +1418,8 @@ int main()
 
 On execute ce programme sur la carte et voici ce que l'on observe en sortie de la RAM bi-port. 
 
-![40%center](figures/uC_etape1.png)
+<div align="center"> <img src="figures/uC_etape1.png" width="350"/>
+
 <div align="center"> Oscilloscope: sortie de la RAM bi-port </div>
 <br>
 
@@ -1513,7 +1519,7 @@ void send_frame(int * frame)
 
 Nous vérifions donc que nous recevons bien "GE1 FM" sur le récepteur après avoir exécuté le programme.
 
-![40%center](figures/prog2_GE1FM.jpg)
+<div align="center"> <img src="figures/prog2_GE1FM.jpg" width="300"/>
 <div align="center"> Récepteur FM RDS: "GE1 FM" </div>
 <br>
 
@@ -1713,7 +1719,8 @@ void insert_checkwords(unsigned short* Tab_blocs, unsigned long* Tab_trame)
 
 Dans cet exemple, nous souhaitons envoyer "KABI FM ". Nous exécutons le programme et voici ce que l'on observe sur le récepteur.
 
-![40%center](figures/KABIFM.jpg)
+<div align="center"> <img src="figures/KABIFM.jpg" width="300"/>
+
 <div align="center"> Récepteur FM RDS: "KABI FM" </div>
 <br>
 
