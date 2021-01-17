@@ -1956,3 +1956,25 @@ Nous exécutons le programme ci-dessus, et nous communiquons des textes au micro
 <br>
 
 Les résultats sont très satisfaisants, les textes s'affichent bel et bien sur le récepteur, et ce, en temps réel.
+
+<br>
+
+**Conclusion**:
+
+Nous avons enfin terminé notre codeur RDS qui répond parfaitement à notre cahier des charges. Il permet d'envoyer n'importe quel texte de 8 caractères qui lui serait saisi et envoyé par liaison série en temps réel, à un récepteur FM RDS. 
+
+Ce système paraissait assez compliqué à réaliser au premier abord, mais finalement, il suffisait de suivre un à un chaque étape de la réalisation, et vérifier rigoureusement la satisfaction de chacun de ses objectifs. Bien que nous étions la pluspart du temps en autonomie, le sujet d'étude contenait toutes les informations nécessaires et nous guidait tout au long de la réalisation jusqu'à la deuxième partie. La première partie était assez répétitive, il fallait répéter les mêmes étapes pour chaque bloc : coder, simuler, programmer, mesurer et tester. Cette démarche routinière est comparable à ce à quoi, on pourrait s'attendre en milieu professionnel. La deuxième partie demandait un peu plus de réflexion étant donné que le sujet ne nous guidait plus. La compréhension du fonctionnement d'un FPGA, du principe du NIOS et de son implantation dans le FPGA était une découverte pour moi et m'a permis de découvrir ce qui se cachait derrière ces cartes. C'est une fois toutes ces notions comprises que j'ai pu aborder sereinement la partie conception du microcontrôleur qui ne ressemblait en rien à ce que j'avais pu faire auparavant. Néanmoins, le tutoriel d'introduction au co-design m'a permis de me familiariser avec l'outil Platform Designer, après quoi, il m'a semblé assez facile de répéter les mêmes étapes en fonction des besoins de notre microcontrôleur. Pour ce qui est de la programmation, la compréhension du contenus des différents fichiers d'en-tête n'était pas évidente. Il m'a fallu observer attentivement ces fichiers et les noms des fonctions, pour essayer de comprendre comment il fallait s'y prendre pour interagir avec les ports, et surtout, tout simplement tester mes programmes pour vérifier, après quoi la programmation m'a parus assez naturelle. 
+
+Cette réalisation m'a permis d'acquérir de nouvelle compétences et d'en enrichir d'autres :
+- Logiciels Quartus et ModelSim
+- Synthèse logique (langage VHDL)
+- Analyse de signaux et manipulation de l'oscilloscope
+- Programmation de FPGA
+- Méthode de simulation
+- Rigueur
+- Autonomie
+- Rédaction et esprit de synthèse
+
+En plus de ces compétences, elle m'a permis d'en apprendre un peu plus sur l'architecture d'un FPGA et son fonctionnement, la communication de noms de stations et le principe d'une trame RDS. Autrement dit, elle m'a permis d'enrichir ma culture générale liée à la GEII.
+
+Je termine par quelques améliorations possible pour notre codeur RDS. Etant donné que la trame RDS contient plusieurs informations et pas seulement le nom de la station, je pense que ce serait intéressant de permettre le contrôle de chacune de ces informations. On pourrait imaginer un programme bien plus complexe dans lequel on pourrait envoyer par liaison série le nom de la section concerné suivis de la valeur à attribuer. On pourrait également activer les interruptions pour la liaison série, de cette manière, on ne sera plus obligé de faire attendre le programme dans une boucle jusqu'à ce qu'un caractère soit reçu, je trouve cette dernière solution un peu plus “propre”.
