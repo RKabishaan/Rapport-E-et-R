@@ -16,6 +16,7 @@ Dans un premier temps la trame binaire est fournie pour se focaliser uniquement 
 Puis dans un second temps, le nom de la radio sera reçue par liaison série et la trame sera alors à coder selon la norme. Pour cela, un microprocesseur NIOS sera implanté dans le FPGA (**F**iel **P**rogrammable **G**ate **A**rrays) et le programme qui sera réalisé donnera la possibilité de recevoir le nom par liaison série, de former les quatre groupes nécessaires de la trame, et d'écrire les bits correspondants dans la mémoire RAM bi port. La première partie qui récupère le contenu de la RAM enverra donc à l'émetteur, le nouveau nom. 
 
 ![40%center](figures/structure_CodeurRDS.png)
+
 <div align="center"> Structure du codeur de trame RDS </div>
 
 <br>
@@ -33,6 +34,7 @@ Notre générateur d'horloge 114 kHz a:
 * une sortie d'horloge (w_114k)
 
 ![40%center](figures/circuit_gen114k.png)
+
 <div align="center"> Schéma interne de synthèse du générateur d'horloge 114 kHz.</div>
 
 <br>
@@ -134,6 +136,7 @@ END gen_114k_arch;
 ```
 ModelSim nous permet alors de simuler notre générateur d'horloge 114kHz à travers notre _test bench_, ce qui nous donne les résultats suivants:
 ![40%center](figures/chronogramme_gen114k.png)
+
 <div align="center"> Chronogramme: générateur d'horloge  114kHz </div>
 
 <br>
@@ -144,6 +147,7 @@ Une fois la partie théorique validé, nous nous assurons du fonctionnement prat
 
 
 <div align="center"> <img src="figures/114kHz_Oscilo.png" width="350"/>
+
 <div align="center"> Oscilloscope: Sortie du générateur d'horloge  114kHz </div>
 
 <br>
@@ -151,6 +155,7 @@ Une fois la partie théorique validé, nous nous assurons du fonctionnement prat
 L'oscilloscope mesure bien un signal carré à 114 kHz (à 10 Hz près) en sortie. De plus, lorsqu'on appuie sur le bouton-poussoir de la carte, la sortie est bloquée. Notre bloc générateur d'horloge 114 kHz fonctionne donc correctement. Nous pouvons en faire un symbole sur Quartus. 
 
 <div align="center"> <img src="figures/symbole_gen114k.png" width="200"/>
+
 <div align="center"> Symbole du générateur d'horloge 114 kHz </div>
 
 <br>
@@ -326,6 +331,7 @@ Ce _test bench_ nous permet d'obtenir les résultats de simulation suivants:
 <br>
 
 ![40%center](figures/chronogramme_gen_horloges_1.png) 
+
 <div align="center"> Chronogramme 1: Générateur de signaux d'horloges </div>
 
 <br>
@@ -335,6 +341,7 @@ Tout d'abord, on remarque que le signal **w_57k** est bien à 57kHz (la demi-pé
 <br>
 
 ![40%center](figures/chronogramme_gen_horloges_2.png)
+
 <div align="center"> Chronogramme 2: Générateur de signaux d'horloges </div>
 
 > Calculs:
@@ -350,6 +357,7 @@ Les signaux **w_57k_48** et **w_rd_mem** ont une fréquence de 57/48 kHz, et **w
 <br>
 
 ![40%center](figures/chronogramme_gen_horloges_3.png)
+
 <div align="center"> Chronogramme 3: Générateur de signaux d'horloges </div>
 
 <br>
@@ -364,6 +372,7 @@ Notre cahier des charges est donc théoriquement respecté. Nous pouvons passer 
 Après avoir généré le symbole du générateur de signaux d'horloges à partir du fichier vhdl, nous pouvons programmer la carte à partir du circuit suivant.
 
 ![40%center](figures/circuit_test_gen_horloges.png)
+
 <div align="center"> Circuit test du générateur de signaux d'horloge </div>
 
 <br>
@@ -395,6 +404,7 @@ Le signal **w_57k_24** a bien une fréquence de 57/24 kHz, et **w_57k_48** une f
 <br>
 
 <div align="center"> <img src="figures/gen_horloge_globale.png" width="350"/>
+
 <div align="center"> Oscilloscope: vue globale des sorties du générateur de signaux d'horloge (w_rd_mem, w_57k_24, w_57_58) </div>
 
 <br>
@@ -529,6 +539,7 @@ end architecture a_tb_cpt_adresse;
 
 La simulation nous donne les résultats suivants:
 ![40%center](figures/chronogramme_cpt_adr.png)
+
 <div align="center"> Chronogramme: Compteur d'adresse de la RAM </div>
 
 <br>
@@ -540,6 +551,7 @@ Ces résultats nous montrent d'une part, que le compteur commence à 0 et s'incr
 Tout fonctionne correctement, nous pouvons donc générer le symbole correspondant au programme VHDL de notre compteur d'adresse.
 
 <div align="center"> <img src="figures/symbole_cpt_adresse.png" width="200"/>
+
 <div align="center"> Symbole du compteur d'adresse de la RAM </div>
 
 <br>
@@ -644,17 +656,20 @@ end architecture a_tb_div_freq_50;
 
 Nous obtenons les résultats de simulation suivants:
 ![40%center](figures/chronogramme_div_freq_50.png)
+
 <div align="center"> Chronogramme: Diviseur de fréquence par 50 </div>
 
 <br>
 
 En fournissant un signal d'horloge à 50 MHz (**clk**) en entrée, on obtient bien un signal carré de 1 MHz en sortie (**Q**), donc notre diviseur de fréquence semble fonctionner. Pour le confirmer nous effectuons les mesures à l'oscilloscope.
 ![40%center](figures/circuit_test_div_freq_50.png)
+
 <div align="center"> Circuit test du diviseur de fréquence par 50 </div>
 
 <br>
 
 <div align="center"> <img src="figures/div_freq_50.png" width="350"/>
+
 <div align="center"> Oscilloscope: Sortie du diviseur de fréquence par 50 </div>
 
 <br>
@@ -664,6 +679,7 @@ Nous avons bien 1MHz en sortie, ce résultat nous confirme donc le bon fonctionn
 La ram 2 ports est générée par Quartus à partir de nos configurations, après quoi, nous assemblons les deux sous-blocs pour former le circuit de notre mémoire bi-port.
 
 ![40%center](figures/circuit_ram_biport.png)
+
 <div align="center"> Circuit interne de la mémoire bi-port </div>
 
 <br>
@@ -867,6 +883,7 @@ END ram_biport_arch;
 
 Nous obtenons les résultats de simulation suivants:
 ![40%center](figures/chronogramme_ram_biport.png)
+
 <div align="center"> Chronogramme: Mémoire bi-port </div>
 
 <br>
@@ -874,6 +891,7 @@ Nous obtenons les résultats de simulation suivants:
 Nous avons fait en sorte que le compteur d'adresse (**adr_read**) ai le comportement attendu, en l'incrémentant à une fréquence de 57/48 kHz, et en le faisant compter de 0 à 415. D'après les résultats de simulation, la trame obtenue en sortie semble correspondre à la trame initiale pré-enregistrée. Une fois arrivé au dernier bit de la trame, la mémoire bi-port revient au premier bit, comme lui impose l'entrée d'adresse. Chaque bit dure aussi longtemps qu'une valeur du compteur. Notre mémoire bi-port fonctionne donc parfaitement et nous pouvons en faire un symbole.
 
 <div align="center"> <img src="figures/symbole_ram_biport.png" width="200"/>
+
 <div align="center"> Symbole de la mémoire bi-port </div>
 
 <br>
@@ -883,6 +901,7 @@ Nous avons fait en sorte que le compteur d'adresse (**adr_read**) ai le comporte
 Le bloc codeur biphase est formé par deux étages: un premier effectuant un codage différentiel de type NRZ et le deuxième réalisant le codage biphase.
 
 ![40% center](figures/circuit_consigne_codeur_biphase.png)
+
 <div align="center"> Circuit souhaité du codeur biphase </div>
 
 <br>
@@ -890,6 +909,7 @@ Le bloc codeur biphase est formé par deux étages: un premier effectuant un cod
 Le principe est illustré par le chronogramme suivant:
 
 ![40% center](figures/chronogramme_theorique_codeur_biphase.png)
+
 <div align="center"> Chronogramme théorique du codeur biphase </div>
 
 <br>
@@ -1041,6 +1061,7 @@ end architecture a_tb_auto_biphase;
 
 Et les résultats de simulation sont les suivants:
 ![40%center](figures/chronogramme_auto_biphase.png)
+
 <div align="center"> Chronogramme: sous-bloc auto_biphase </div>
 
 <br>
@@ -1050,6 +1071,7 @@ On observe que l'horloge d'entrée simulée a la même allure que le signal **w_
 Notre sous-bloc **auto_biphase** est donc fonctionnel, nous en faisons un symbole.
 
 ![40%center](figures/symbole_auto_biphase.png)
+
 <div align="center"> Symbole du sous-bloc auto_biphase </div>
 
 <br>
@@ -1057,6 +1079,7 @@ Notre sous-bloc **auto_biphase** est donc fonctionnel, nous en faisons un symbol
 Il ne reste plus qu'a réaliser le circuit complet en associant ce sous-bloc au premier étage effectuant le codage différentiel NRZ.
 
 ![40%center](figures/circuit_codeur_biphase.png)
+
 <div align="center"> Schéma interne de synthèse du codeur biphase </div>
 
 <br>
@@ -1279,6 +1302,7 @@ END codeur_biphase_arch;
 
 La simulation nous donne les résultats suivants:
 ![40%center](figures/chronogramme_codeur_biphase.png)
+
 <div align="center"> Chronogramme: codeur biphase </div>
 
 <br>
@@ -1288,6 +1312,7 @@ Sur ce chronogramme nous vérifions tout d'abord que les entrées simulées (**d
 Notre codeur biphase semble donc fonctionner parfaitement bien, nous le vérifions à l'oscilloscope:
 
 ![40%center](figures/codeur_biphase.png)
+
 <div align="center"> Oscilloscope: Codeur biphase </div>
 
 <br>
@@ -1297,6 +1322,7 @@ Ces mesures nous confirment le bon fonctionnement de notre codeur biphase. En ef
 Notre codeur biphase fonctionne donc parfaitement bien, nous pouvons en faire un symbole.
 
 ![40%center](figures/symbole_codeur_biphase.png)
+
 <div align="center"> Symbole du sous-bloc auto_biphase </div>
 
 <br>
@@ -1304,6 +1330,7 @@ Notre codeur biphase fonctionne donc parfaitement bien, nous pouvons en faire un
 Nous avons désormais tous les blocs nécessaire pour la première partie. Il ne reste plus qu'à les assembler, puis à envoyer le programme sur la carte pour qu'on puisse enfin envoyer la trame RDS pré-enregistrée. 
 
 ![40%center](figures/circuit_partie1.png)
+
 <div align="center"> Circuit de la partie 1 du codeur RDS  </div>
 
 <br>
@@ -1355,12 +1382,14 @@ Notre microcontrôleur a besoin de :
 Nous ajoutons donc ces différents composants à notre microcontrôleur sur Platform Designer en prennant le soin de bien relier les différents ports comme il se doit, après quoi nous attribuons des adresses aux composants en cliquant sur "Assign Base Addresses", puis nous attribuons des valeurs dans la colonne "IRQ" pour définir la priorité des interruptions entre celles du JTAG UART et celles du UART RS-232 (ces valeurs ont en réalité peu d'importance dans notre cas). Enfin, nous générons les différents fichiers de notre sytème.
 
 ![40%center](figures/systeme_complet.png)
+
 <div align="center"> Contenus complet du microcontrôleur </div>
 <br>
 
 Sur Quartus nous ajoutons notre microcontrôleur au circuit de notre codeur RDS, puis nous relions les différents ports comme convenus.
 
 ![40%center](figures/circuit_final.png)
+
 <div align="center"> Circuit complet du codeur RDS </div>
 <br>
 
@@ -1520,6 +1549,7 @@ void send_frame(int * frame)
 Nous vérifions donc que nous recevons bien "GE1 FM" sur le récepteur après avoir exécuté le programme.
 
 <div align="center"> <img src="figures/prog2_GE1FM.jpg" width="300"/>
+
 <div align="center"> Récepteur FM RDS: "GE1 FM" </div>
 <br>
 
@@ -1959,6 +1989,7 @@ void rs232_recieve_text(char text[8+1])
 Nous exécutons le programme ci-dessus, et nous communiquons des textes au microcontrôleur par liaison série grâce au logiciel Termite.
 
 ![40%center](figures/liaison_serie.jpg)
+
 <div align="center"> Résultats de communication de textes par liaison série </div>
 <br>
 
