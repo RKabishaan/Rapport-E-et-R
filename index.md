@@ -1411,6 +1411,10 @@ La programmation de notre microcontrôleur vas se faire en 4 étapes:
 
 <br>
 
+<br>
+
+<br>
+
 ### Etape 1 : Modifier le contenus de la mémoire
 
 Pour modifier le contenus de la mémoire et pouvoir vérifier que ça a fonctionné, nous allons envoyer une série de bit alternant entre 1 et 0 à des adresses qui se succèdents. De cette manière, on devrais remarquer facilement le changement du contenus de la mémoire en observant la sortie de la RAM bi-port.
