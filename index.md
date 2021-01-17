@@ -1457,6 +1457,8 @@ On retrouve bien, une alternance régulière entre des bits à 1 et des bits à 
 
 La communication avec la RAM bi-port est maitrisé, nous pouvons donc passer à l'étape suivante
 
+<br>
+
 ### Etape 2 : Envoyer la trame initiale contenant "GE1 FM"
 
 Dans cette étape nous allons simplement renvoyer la trame dont on connais la valeur de chaque bit, afin de vérifier que notre fonction d'envoie de trames fonctionne sans problème. Nous allons donc créer un tableau contenant les 16 blocs de la trame RDS et l'envoyer à la RAM bi-port grâce à une nouvelle fonction que nous allons coder.
