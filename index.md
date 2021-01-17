@@ -1405,6 +1405,8 @@ La programmation de notre microcontrôleur vas se faire en 4 étapes:
 - Etape 3 : Modifier le texte en dur (directement dans le programme avant de compiler)  - Pour vérifier le fonctionnement de la fonction de génération de la trame en fonction du texte donné. 
 - Etape 4 : Modifier le texte en temps réel, par liaison série - Pour vérifier le fonctionnement de la fonction de réception du texte saisi par l'utilisateur. Et c'est surtout le but final de notre codeur RDS.
 
+<br>
+
 ### Etape 1 : Modifier le contenus de la mémoire
 
 Pour modifier le contenus de la mémoire et pouvoir vérifier que ça a fonctionné, nous allons envoyer une série de bit alternant entre 1 et 0 à des adresses qui se succèdents. De cette manière, on devrais remarquer facilement le changement du contenus de la mémoire en observant la sortie de la RAM bi-port.
@@ -1558,6 +1560,7 @@ Nous vérifions donc que nous recevons bien "GE1 FM" sur le récepteur après av
 
 Notre fonction d'envoie de trames RDS est fonctionnelle, nous pouvons donc passer à l'étape suivante.
 
+<br>
 
 ### Etape 3 : Modifier le texte en dur 
 
@@ -1758,6 +1761,8 @@ Dans cet exemple, nous souhaitons envoyer "KABI FM ". Nous exécutons le program
 <br>
 
 Nous sommes donc en mesure d'envoyer n'importe quel text au récepteur FM RDS, il ne manque plus qu'a permettre cela en temps réel, par liaison série.
+
+<br>
 
 ### Etape 4 : Modifier le texte en temps réel, par liaison série
 
